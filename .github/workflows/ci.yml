@@ -33,10 +33,11 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
-      # - name: create env file
-        # run: |
-          # touch .env
-          # echo TEST=${{ secrets.TEST }} >> .env
+      - name: create env file
+        run: |
+          touch .env
+          echo TURSO_AUTH_TOKEN=${{ secrets.TURSO_AUTH_TOKEN }} >> .env
+          echo TURSO_DATABASE_URL=${{ secrets.TURSO_DATABASE_URL }} >> .env
 
       - name: Install dependencies
         run: npm install -g pnpm && pnpm install
