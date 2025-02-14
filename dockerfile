@@ -12,11 +12,12 @@ RUN npm install -g pnpm
 # Install app dependencies
 RUN pnpm install
 
-# Generate Prisma Client
-RUN pnpm dlx prisma generate
 
 # Bundle app source
 COPY . .
+
+# Generate Prisma Client
+RUN pnpm dlx prisma generate
 
 # Creates a "dist" folder with the production build
 RUN pnpm build
