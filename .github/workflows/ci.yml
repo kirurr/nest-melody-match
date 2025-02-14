@@ -42,6 +42,9 @@ jobs:
       - name: Install dependencies
         run: npm install -g pnpm && pnpm install
 
+      - name: Generate Prisma Client
+        run: pnpm dlx prisma generate
+
       - name: Build Docker image
         run: docker compose build
 
