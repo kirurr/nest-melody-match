@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { GoogleAuthModule } from './google-auth/google-auth.module';
 import { AuthService } from './auth.service';
-import { UserModule } from 'src/user/user.module';
-import { PrismaService } from 'src/prisma.service';
-import { CustomJwtModule } from 'src/jwt/jwt.module';
-import { RefreshTokenModule } from 'src/refresh-token/refresh-token.module';
+import { UserModule } from '../user/user.module';
+import { PrismaService } from '../prisma.service';
+import { CustomJwtModule } from '../jwt/jwt.module';
+import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
 
 @Module({
   imports: [

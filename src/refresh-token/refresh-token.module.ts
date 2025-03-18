@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { RefreshTokenRepository } from './refresh-token.repository';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 import { RefreshTokenService } from './refresh-token.service';
 import { CryptoService } from './crypto-service';
 
