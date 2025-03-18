@@ -62,7 +62,7 @@ describe('RefreshTokenRepository', () => {
   describe('create', () => {
     it('should create and return a new refresh token', async () => {
       const refreshToken = 'new-refresh-token';
-      const userId = '1';
+      const userId = 1;
       const mockToken: ActiveRefreshToken = { userId: 1, refreshToken } as ActiveRefreshToken;
       mockPrismaService.activeRefreshToken.create.mockResolvedValue(mockToken);
 
@@ -79,7 +79,7 @@ describe('RefreshTokenRepository', () => {
 
   describe('findByUserId', () => {
     it('should return a refresh token if found by userId', async () => {
-      const userId = '1';
+      const userId = 1;
       const mockToken: ActiveRefreshToken = { userId: 1, refreshToken: 'some-refresh-token' } as ActiveRefreshToken;
       mockPrismaService.activeRefreshToken.findUnique.mockResolvedValue(mockToken);
 
@@ -91,7 +91,7 @@ describe('RefreshTokenRepository', () => {
     });
 
     it('should return null if no refresh token found for userId', async () => {
-      const userId = '1';
+      const userId = 1;
       mockPrismaService.activeRefreshToken.findUnique.mockResolvedValue(null);
 
       const result = await refreshTokenRepository.findByUserId(userId);

@@ -11,7 +11,7 @@ export class RefreshTokenService {
 
   async encryptRefreshTokenAndSaveToDB(
     refreshToken: string,
-    userId: string,
+    userId: number,
   ): Promise<string> {
     const encryptedRefreshToken =
       await this.cryptoService.encryptRefreshToken(refreshToken);
@@ -21,7 +21,7 @@ export class RefreshTokenService {
     return encryptedRefreshToken;
   }
 
-  async getDecryptedRefreshTokenByUserId(userId: string): Promise<string | null> {
+  async getDecryptedRefreshTokenByUserId(userId: number): Promise<string | null> {
     const refreshToken = await this.refreshTokenRepository.findByUserId(userId);
 
     if (!refreshToken) {

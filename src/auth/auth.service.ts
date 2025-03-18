@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { GoogleAuthService } from './google-auth/google-auth.service';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { User } from '@prisma/client';
-import { JwtService } from 'src/jwt/jwt.service';
-import { RefreshTokenService } from 'src/refresh-token/refresh-token.service';
+import { JwtService } from '../jwt/jwt.service';
+import { RefreshTokenService } from '../refresh-token/refresh-token.service';
 
 @Injectable()
 export class AuthService {
@@ -14,12 +14,10 @@ export class AuthService {
     private readonly refreshTokenService: RefreshTokenService,
   ) {}
 
-  public async googleAuth(
-    code: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    const [_tokens, userData] =
-      await this.googleAuthService.retireveTokensAndUserData(code);
-
+  public async handleAuth(userData: { email: string; name: string }): Promise<{
+    accessToken: string;
+    refreshToken: string;
+  }> {
     let user: User | null;
     user = await this.userService.findByEmail(userData.email);
 
@@ -35,19 +33,19 @@ export class AuthService {
 
       await this.refreshTokenService.encryptRefreshTokenAndSaveToDB(
         refreshToken,
-        user.id.toString(),
+        user.id,
       );
     } else {
       refreshToken =
         await this.refreshTokenService.getDecryptedRefreshTokenByUserId(
-          user.id.toString(),
+          user.id,
         );
 
       if (!refreshToken) {
         refreshToken = await this.jwtService.signRefreshToken(user.id);
         await this.refreshTokenService.encryptRefreshTokenAndSaveToDB(
           refreshToken,
-          user.id.toString(),
+          user.id,
         );
       } else {
         try {
@@ -62,5 +60,14 @@ export class AuthService {
     const accessToken = await this.jwtService.signAccessToken(user.id);
 
     return { accessToken, refreshToken };
+  }
+
+  public async googleAuth(
+    code: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const [_tokens, userData] =
+      await this.googleAuthService.retireveTokensAndUserData(code);
+
+    return await this.handleAuth(userData);
   }
 }
