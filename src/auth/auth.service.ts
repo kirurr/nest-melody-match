@@ -4,6 +4,7 @@ import { UserService } from '../user/user.service';
 import { User } from '@prisma/client';
 import { JwtService } from '../jwt/jwt.service';
 import { RefreshTokenService } from '../refresh-token/refresh-token.service';
+import { TokensPairDTO } from './dto/tokens-pair.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,10 +15,7 @@ export class AuthService {
     private readonly refreshTokenService: RefreshTokenService,
   ) {}
 
-  public async handleAuth(userData: { email: string; name: string }): Promise<{
-    accessToken: string;
-    refreshToken: string;
-  }> {
+  public async handleAuth(userData: { email: string; name: string }): Promise<TokensPairDTO> {
     let user: User | null;
     user = await this.userService.findByEmail(userData.email);
 
@@ -69,5 +67,30 @@ export class AuthService {
       await this.googleAuthService.retireveTokensAndUserData(code);
 
     return await this.handleAuth(userData);
+  }
+
+  public async getNewTokensPairByRefreshToken(
+    refreshToken: string,
+  ): Promise<TokensPairDTO> {
+    const decryptedRefreshTokenData = await this.jwtService
+      .verifyRefreshToken(refreshToken)
+      .catch(() => {
+        throw new Error('Refresh token is invalid');
+      });
+
+    const newRefreshToken = await this.jwtService.signRefreshToken(
+      decryptedRefreshTokenData.userId,
+    );
+
+    await this.refreshTokenService.updateByUserId(
+      decryptedRefreshTokenData.userId,
+      newRefreshToken,
+    );
+
+    const newAccessToken = await this.jwtService.signAccessToken(
+      decryptedRefreshTokenData.userId,
+    );
+
+    return { refreshToken: newRefreshToken, accessToken: newAccessToken };
   }
 }
