@@ -5,19 +5,17 @@ FROM node:20-alpine
 WORKDIR /usr/src/app
 
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
-COPY package*.json ./
+COPY package*.json pnpm-lock.yaml ./
 
 RUN npm install -g pnpm
 
 # Install app dependencies
 RUN pnpm install
 
-
 # Bundle app source
 COPY . .
 
-# Generate Prisma Client
-RUN pnpm dlx prisma generate
+RUN pnpm prisma generate
 
 # Creates a "dist" folder with the production build
 RUN pnpm build
