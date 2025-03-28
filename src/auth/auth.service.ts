@@ -17,12 +17,12 @@ export class AuthService {
 
   public async handleAuth(userData: { email: string; name: string }): Promise<TokensPairDTO> {
     let user: User | null;
-    user = await this.userService.findByEmail(userData.email);
+    user = await this.userService.findUserByEmail(userData.email);
 
     let refreshToken: string | null;
 
     if (!user) {
-      user = await this.userService.create({
+      user = await this.userService.createUser({
         name: userData.name,
         email: userData.email,
       });

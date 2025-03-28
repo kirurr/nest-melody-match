@@ -18,8 +18,8 @@ describe('AuthService', () => {
   };
 
   const mockUserService = {
-    findByEmail: jest.fn(),
-    create: jest.fn(),
+    findUserByEmail: jest.fn(),
+    createUser: jest.fn(),
   };
 
   const mockJwtService = {
@@ -104,7 +104,7 @@ describe('AuthService', () => {
       const refreshToken = 'valid-refresh-token';
       const accessToken = 'new-access-token';
 
-      mockUserService.findByEmail.mockResolvedValue(user);
+      mockUserService.findUserByEmail.mockResolvedValue(user);
       mockRefreshTokenService.getDecryptedRefreshTokenByUserId.mockResolvedValue(
         refreshToken,
       );
@@ -112,7 +112,7 @@ describe('AuthService', () => {
 
       const result = await authService.handleAuth(userData);
 
-      expect(mockUserService.findByEmail).toHaveBeenCalledWith(userData.email);
+      expect(mockUserService.findUserByEmail).toHaveBeenCalledWith(userData.email);
       expect(
         mockRefreshTokenService.getDecryptedRefreshTokenByUserId,
       ).toHaveBeenCalledWith(user.id);
@@ -137,7 +137,7 @@ describe('AuthService', () => {
       const newRefreshToken = 'new-refresh-token';
       const accessToken = 'new-access-token';
 
-      mockUserService.findByEmail.mockResolvedValue(user);
+      mockUserService.findUserByEmail.mockResolvedValue(user);
       mockRefreshTokenService.getDecryptedRefreshTokenByUserId.mockResolvedValue(
         refreshToken,
       );
@@ -150,7 +150,7 @@ describe('AuthService', () => {
 
       const result = await authService.handleAuth(userData);
 
-      expect(mockUserService.findByEmail).toHaveBeenCalledWith(userData.email);
+      expect(mockUserService.findUserByEmail).toHaveBeenCalledWith(userData.email);
       expect(
         mockRefreshTokenService.getDecryptedRefreshTokenByUserId,
       ).toHaveBeenCalledWith(user.id);
@@ -180,7 +180,7 @@ describe('AuthService', () => {
       const refreshToken = 'new-refresh-token';
       const accessToken = 'new-access-token';
 
-      mockUserService.findByEmail.mockResolvedValue(user);
+      mockUserService.findUserByEmail.mockResolvedValue(user);
       mockRefreshTokenService.getDecryptedRefreshTokenByUserId.mockResolvedValue(
         null,
       );
@@ -189,7 +189,7 @@ describe('AuthService', () => {
 
       const result = await authService.handleAuth(userData);
 
-      expect(mockUserService.findByEmail).toHaveBeenCalledWith(userData.email);
+      expect(mockUserService.findUserByEmail).toHaveBeenCalledWith(userData.email);
       expect(
         mockRefreshTokenService.getDecryptedRefreshTokenByUserId,
       ).toHaveBeenCalledWith(user.id);
@@ -214,15 +214,15 @@ describe('AuthService', () => {
       const refreshToken = 'new-refresh-token';
       const accessToken = 'new-access-token';
 
-      mockUserService.findByEmail.mockResolvedValue(null);
-      mockUserService.create.mockResolvedValue(user);
+      mockUserService.findUserByEmail.mockResolvedValue(null);
+      mockUserService.createUser.mockResolvedValue(user);
       mockJwtService.signRefreshToken.mockResolvedValue(refreshToken);
       mockJwtService.signAccessToken();
 
       const result = await authService.handleAuth(userData);
 
-      expect(mockUserService.findByEmail).toHaveBeenCalledWith(userData.email);
-      expect(mockUserService.create).toHaveBeenCalledWith(userData);
+      expect(mockUserService.findUserByEmail).toHaveBeenCalledWith(userData.email);
+      expect(mockUserService.createUser).toHaveBeenCalledWith(userData);
       expect(mockJwtService.signRefreshToken).toHaveBeenCalledWith(user.id);
       expect(
         mockRefreshTokenService.encryptRefreshTokenAndSaveToDB,

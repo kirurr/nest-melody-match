@@ -32,13 +32,17 @@ describe('UserService', () => {
     expect(userService).toBeDefined();
   });
 
-  describe('findById', () => {
+  describe('findUserById', () => {
     it('should return a user if found', async () => {
       const userId = 1;
-      const mockUser: User = { id: userId, email: 'test@example.com', name: 'Test User' } as User;
+      const mockUser: User = {
+        id: userId,
+        email: 'test@example.com',
+        name: 'Test User',
+      } as User;
       mockUserRepository.findById.mockResolvedValue(mockUser);
 
-      const result = await userService.findById(userId);
+      const result = await userService.findUserById(userId);
       expect(result).toEqual(mockUser);
       expect(mockUserRepository.findById).toHaveBeenCalledWith(userId);
     });
@@ -47,19 +51,19 @@ describe('UserService', () => {
       const userId = 1;
       mockUserRepository.findById.mockResolvedValue(null);
 
-      const result = await userService.findById(userId);
+      const result = await userService.findUserById(userId);
       expect(result).toBeNull();
       expect(mockUserRepository.findById).toHaveBeenCalledWith(userId);
     });
   });
 
-  describe('findByEmail', () => {
+  describe('findUserByEmail', () => {
     it('should return a user if found', async () => {
       const email = 'test@example.com';
       const mockUser: User = { id: 1, email, name: 'Test User' } as User;
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
 
-      const result = await userService.findByEmail(email);
+      const result = await userService.findUserByEmail(email);
       expect(result).toEqual(mockUser);
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(email);
     });
@@ -68,22 +72,24 @@ describe('UserService', () => {
       const email = 'test@example.com';
       mockUserRepository.findByEmail.mockResolvedValue(null);
 
-      const result = await userService.findByEmail(email);
+      const result = await userService.findUserByEmail(email);
       expect(result).toBeNull();
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(email);
     });
   });
 
-  describe('create', () => {
+  describe('createUser', () => {
     it('should create and return a user', async () => {
-      const userData: Prisma.UserCreateInput = { email: 'test@example.com', name: 'Test User' };
+      const userData: Prisma.UserCreateInput = {
+        email: 'test@example.com',
+        name: 'Test User',
+      };
       const mockUser: User = { id: 1, ...userData } as User;
       mockUserRepository.create.mockResolvedValue(mockUser);
 
-      const result = await userService.create(userData);
+      const result = await userService.createUser(userData);
       expect(result).toEqual(mockUser);
       expect(mockUserRepository.create).toHaveBeenCalledWith(userData);
     });
   });
 });
-
