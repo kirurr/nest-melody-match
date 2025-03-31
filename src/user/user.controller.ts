@@ -12,7 +12,7 @@ import { UserService } from './user.service';
 import { Response } from 'express';
 import { AuthGuard } from '../auth/auth.guard';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { UserId } from 'src/auth/auth.decorator';
+import { AuthorizedUserId } from '../decorators/authorized-user-id.decorator';
 
 @Controller('user')
 export class UserController {
@@ -23,7 +23,7 @@ export class UserController {
   async createUserData(
     @Body(new ValidationPipe()) data: CreateUserDataDTO,
     @Res() res: Response,
-    @UserId() userId: number
+    @AuthorizedUserId() userId: number
   ) {
     try {
       await this.userService.createUserData({
