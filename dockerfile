@@ -24,4 +24,4 @@ RUN pnpm build
 EXPOSE 3000
 
 # Start the server using the production build
-CMD ["pnpm", "start:prod"]
+CMD ["pnpm", "start:dev"]

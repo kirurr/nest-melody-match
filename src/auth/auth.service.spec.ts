@@ -8,9 +8,13 @@ import { User } from '@prisma/client';
 
 describe('AuthService', () => {
   let authService: AuthService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let googleAuthService: GoogleAuthService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let userService: UserService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let jwtService: JwtService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let refreshTokenService: RefreshTokenService;
 
   const mockGoogleAuthService = {

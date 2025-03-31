@@ -12,6 +12,7 @@ import {
 
 describe('AuthController', () => {
   let authController: AuthController;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let authService: AuthService;
 
   const mockAuthService = {
@@ -48,13 +49,13 @@ describe('AuthController', () => {
 
     it('should throw an BadRequestException if code is wrong type', async () => {
       await expect(
-        async () => await target.transform({ code: 1 }, metadata),
+        async () => await target.transform({ code: 1 }, metadata) as void,
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw an BadRequestException if code is empty', async () => {
       await expect(
-        async () => await target.transform({ code: '' }, metadata),
+        async () => await target.transform({ code: '' }, metadata) as void,
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -84,13 +85,13 @@ describe('AuthController', () => {
 
     it('should throw an BadRequestException if refresh token is wrong type', async () => {
       await expect(
-        async () => await target.transform({ refreshToken: 1 }, metadata),
+        async () => await target.transform({ refreshToken: 1 }, metadata) as void,
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw an BadRequestException if refresh token is empty', async () => {
       await expect(
-        async () => await target.transform({ refreshToken: '' }, metadata),
+        async () => await target.transform({ refreshToken: '' }, metadata) as void,
       ).rejects.toThrow(BadRequestException);
     });
 

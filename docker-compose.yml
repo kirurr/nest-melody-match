@@ -6,9 +6,15 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       DATABASE_URL: postgresql://root:root@db:5432/nest_melody_match?schema=public
-
+    develop:
+      watch:
+        - path: ./src
+          action: sync
+          target: /usr/src/app/src
+          ignore:
+            - node_modules
   db:
     image: pgvector/pgvector:pg17
     restart: always

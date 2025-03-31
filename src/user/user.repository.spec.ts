@@ -5,6 +5,7 @@ import { User } from '@prisma/client';
 
 describe('UserRepository', () => {
   let userRepository: UserRepository;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let prismaService: PrismaService;
 
   const mockPrismaService = {
@@ -33,13 +34,13 @@ describe('UserRepository', () => {
     expect(userRepository).toBeDefined();
   });
 
-  describe('findById', () => {
+  describe('findUserById', () => {
     it('should return a user if found', async () => {
       const userId = 1;
       const user: User = { id: userId, email: 'test@example.com', name: 'Test User' } as User;
       mockPrismaService.user.findUnique.mockResolvedValue(user);
 
-      const result = await userRepository.findById(userId);
+      const result = await userRepository.findUserById(userId);
       expect(result).toEqual(user);
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
@@ -50,7 +51,7 @@ describe('UserRepository', () => {
       const userId = 1;
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      const result = await userRepository.findById(userId);
+      const result = await userRepository.findUserById(userId);
       expect(result).toBeNull();
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
@@ -58,13 +59,13 @@ describe('UserRepository', () => {
     });
   });
 
-  describe('findByEmail', () => {
+  describe('findUserByEmail', () => {
     it('should return a user if found', async () => {
       const email = 'test@example.com';
       const user: User = { id: 1, email, name: 'Test User' } as User;
       mockPrismaService.user.findUnique.mockResolvedValue(user);
 
-      const result = await userRepository.findByEmail(email);
+      const result = await userRepository.findUserByEmail(email);
       expect(result).toEqual(user);
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email },
@@ -75,7 +76,7 @@ describe('UserRepository', () => {
       const email = 'test@example.com';
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      const result = await userRepository.findByEmail(email);
+      const result = await userRepository.findUserByEmail(email);
       expect(result).toBeNull();
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email },
@@ -83,13 +84,13 @@ describe('UserRepository', () => {
     });
   });
 
-  describe('create', () => {
+  describe('createUser', () => {
     it('should create and return a user', async () => {
       const userData = { email: 'test@example.com', name: 'Test User' };
       const createdUser: User = { id: 1, ...userData } as User;
       mockPrismaService.user.create.mockResolvedValue(createdUser);
 
-      const result = await userRepository.create(userData);
+      const result = await userRepository.createUser(userData);
       expect(result).toEqual(createdUser);
       expect(mockPrismaService.user.create).toHaveBeenCalledWith({
         data: userData,
