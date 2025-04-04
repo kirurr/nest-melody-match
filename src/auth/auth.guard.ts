@@ -25,8 +25,8 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new BadRequestException('No token');
     }
-    if (token === '11') {
-      request.userId = 11;
+    if (token === '1') {
+      request.userId = 1;
       return true;
     }
 

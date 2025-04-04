@@ -12,6 +12,7 @@ describe('UserService', () => {
     findUserById: jest.fn(),
     findUserByEmail: jest.fn(),
     createUser: jest.fn(),
+    createUserPreferences: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -91,6 +92,26 @@ describe('UserService', () => {
       const result = await userService.createUser(userData);
       expect(result).toEqual(mockUser);
       expect(mockUserRepository.createUser).toHaveBeenCalledWith(userData);
+    });
+  });
+
+  describe('createUserPreferences', () => {
+    it('should call userRepository.createUserPreferences with correct data', async () => {
+      const data = {
+        userId: 1,
+        genresVector: [1, 0, 0, 0, 0],
+        desiredSex: 'MALE' as 'MALE' | 'FEMALE',
+      };
+
+      mockUserRepository.createUserPreferences = jest
+        .fn()
+        .mockResolvedValue(undefined);
+
+      await userService.createUserPreferences(data); 
+
+      expect(mockUserRepository.createUserPreferences).toHaveBeenCalledWith(
+        data,
+      ); 
     });
   });
 });

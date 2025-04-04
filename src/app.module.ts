@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { CustomJwtModule } from './jwt/jwt.module';
 import { UserModule } from './user/user.module';
 import { RefreshTokenModule } from './refresh-token/refresh-token.module';
+import { GenreModule } from './genre/genre.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RefreshTokenModule } from './refresh-token/refresh-token.module';
     CustomJwtModule,
     UserModule,
     RefreshTokenModule,
+    GenreModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

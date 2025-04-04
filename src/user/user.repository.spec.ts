@@ -9,6 +9,7 @@ describe('UserRepository', () => {
   let prismaService: PrismaService;
 
   const mockPrismaService = {
+    $executeRaw: jest.fn(),
     user: {
       findUnique: jest.fn(),
       create: jest.fn(),
@@ -97,5 +98,26 @@ describe('UserRepository', () => {
       });
     });
   });
+
+describe('createUserPreferences', () => {
+  it('should insert user preferences into the database', async () => {
+    const data = {
+      userId: 1,
+      genresVector: [1, 0, 0, 0, 0],
+      desiredSex: 'MALE' as 'MALE' | 'FEMALE',
+    };
+
+    mockPrismaService.$executeRaw.mockResolvedValue(undefined); // Предполагаем, что метод ничего не возвращает
+
+    await userRepository.createUserPreferences(data);
+
+    expect(mockPrismaService.$executeRaw).toHaveBeenCalledWith(
+      expect.any(Array),
+      data.userId,
+      data.genresVector,
+      data.desiredSex,
+    );
+  });
+});
 });
 

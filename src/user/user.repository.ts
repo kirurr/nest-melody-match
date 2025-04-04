@@ -26,7 +26,18 @@ export class UserRepository {
 
   async createUserData(data: Prisma.UserDataCreateInput): Promise<UserData> {
     return await this.db.userData.create({
-      data: data
-    })
+      data: data,
+    });
+  }
+
+  async createUserPreferences(data: {
+    userId: number;
+    genresVector: number[];
+    desiredSex: 'MALE' | 'FEMALE';
+  }): Promise<void> {
+    await this.db.$executeRaw`
+      INSERT INTO "UserPreferences" ("userId", "genresVector", "desiredSex")
+      VALUES (${data.userId}, ${data.genresVector}::vector, ${data.desiredSex}::"Sex")
+    `;
   }
 }
