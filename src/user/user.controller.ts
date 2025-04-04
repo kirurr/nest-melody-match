@@ -14,7 +14,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { AuthorizedUserId } from '../decorators/authorized-user-id.decorator';
 import { createUserPreferencesDTO } from './dto/create-user-preferences.dto';
-import { GenreService } from 'src/genre/genre.service';
+import { GenreService } from '../genre/genre.service';
 
 @Controller('user')
 export class UserController {

@@ -4,7 +4,7 @@ import { UserRepository } from './user.repository';
 import { PrismaService } from '../prisma.service';
 import { UserController } from './user.controller';
 import { CustomJwtModule } from '../jwt/jwt.module';
-import { GenreModule } from 'src/genre/genre.module';
+import { GenreModule } from '../genre/genre.module';
 
 @Module({
 	imports: [
