@@ -45,15 +45,36 @@ export class UserRepository {
     userId: number,
     limit: number,
   ): Promise<User[]> {
-    const users: User[]  = await this.db.$queryRaw`
-      select u.* from "User" as u 
-      join "UserPreferences" as up
-      on u."id" = up."userId" 
-      where u."id" != ${userId}
-      order by up."genresVector" <->
-      (select "genresVector" from "UserPreferences" where "userId" = ${userId})
-      limit ${limit}
-    `;
-    return users
+    const users: User[] = await this.db.$queryRaw`
+        SELECT u.*
+        FROM "User" AS u
+        JOIN "UserPreferences" AS up ON u."id" = up."userId"
+        JOIN "UserData" AS ud ON u.id = ud.id
+        JOIN "UserPreferences" AS up1 ON up1."userId" = ${userId}
+        JOIN "UserData" AS ud1 ON ud1."userId" = ${userId}
+        WHERE u."id" != ${userId}
+          AND 1 = 
+          CASE
+            WHEN up1."desiredSex" = 'BOTH' and up."desiredSex" = 'BOTH' THEN 1
+            WHEN up1."desiredSex" = 'MALE' and ud.sex = 'MALE' 
+              and ud1.sex = 
+                CASE
+                  WHEN up."desiredSex" = 'BOTH' THEN ud1.sex
+                  WHEN up."desiredSex" = 'MALE' THEN 'MALE' ELSE 'FEMALE'
+                END 
+            THEN 1
+            WHEN up1."desiredSex" = 'FEMALE' and ud.sex = 'FEMALE' 
+              and ud1.sex = 
+                CASE
+                  WHEN up."desiredSex" = 'BOTH' THEN ud1.sex
+                  WHEN up."desiredSex" = 'MALE' THEN 'MALE' ELSE 'FEMALE'
+                END 
+            THEN 1
+          END
+        ORDER BY 
+          up."genresVector" <-> up1."genresVector",
+          ABS(ud.age - ud1.age)
+        LIMIT ${limit}`;
+    return users;
   }
 }

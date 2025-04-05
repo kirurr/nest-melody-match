@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, Sex } from "@prisma/client";
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class CreateUserDataDTO implements Omit<Prisma.UserDataCreateInput, 'user'> {
@@ -6,12 +6,9 @@ export class CreateUserDataDTO implements Omit<Prisma.UserDataCreateInput, 'user
 	@IsNotEmpty()
 	age: number
 
-	@IsEnum({
-		MALE: 'MALE',
-		FEMALE: 'FEMALE'
-	})
+	@IsEnum(Sex)
 	@IsNotEmpty()
-	sex: 'MALE' | 'FEMALE'
+	sex: Sex
 
 	@IsString()
 	@IsNotEmpty()

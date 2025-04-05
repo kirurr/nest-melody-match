@@ -1,3 +1,4 @@
+import { PreferencesSex } from '@prisma/client';
 import {
   ArrayNotEmpty,
   IsArray,
@@ -13,6 +14,6 @@ export class createUserPreferencesDTO {
   genresIds: number[];
 
   @IsNotEmpty()
-  @IsEnum({ MALE: 'MALE', FEMALE: 'FEMALE' })
-  desiredSex: 'MALE' | 'FEMALE';
+  @IsEnum(PreferencesSex)
+  desiredSex: PreferencesSex;
 }
