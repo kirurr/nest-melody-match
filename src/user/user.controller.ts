@@ -2,7 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Post,
+  Query,
   Res,
   UseGuards,
   ValidationPipe,
@@ -15,6 +17,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { AuthorizedUserId } from '../decorators/authorized-user-id.decorator';
 import { createUserPreferencesDTO } from './dto/create-user-preferences.dto';
 import { GenreService } from '../genre/genre.service';
+import { FindNearestUsersDTO } from './dto/find-nearest-users.dto';
 
 @Controller('user')
 export class UserController {
@@ -76,5 +79,20 @@ export class UserController {
     }
 
     res.sendStatus(201);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('search')
+  async searchNearestUsers(
+    @Query(new ValidationPipe()) query: FindNearestUsersDTO,
+    @AuthorizedUserId() userId: number,
+    @Res() res: Response,
+  ) {
+    res.send(
+      await this.userService.findNearestUsersByUserId(
+        userId,
+        query ? +query.limit : 10,
+      ),
+    );
   }
 }

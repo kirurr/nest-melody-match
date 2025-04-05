@@ -40,4 +40,20 @@ export class UserRepository {
       VALUES (${data.userId}, ${data.genresVector}::vector, ${data.desiredSex}::"Sex")
     `;
   }
+
+  async findNearestUsersByUserId(
+    userId: number,
+    limit: number,
+  ): Promise<User[]> {
+    const users: User[]  = await this.db.$queryRaw`
+      select u.* from "User" as u 
+      join "UserPreferences" as up
+      on u."id" = up."userId" 
+      where u."id" != ${userId}
+      order by up."genresVector" <->
+      (select "genresVector" from "UserPreferences" where "userId" = ${userId})
+      limit ${limit}
+    `;
+    return users
+  }
 }

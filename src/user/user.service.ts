@@ -29,4 +29,11 @@ export class UserService {
   }): Promise<void> {
     return await this.userRepository.createUserPreferences(data);
   }
+
+  async findNearestUsersByUserId(
+    userId: number,
+    limit: number,  
+  ): Promise<User[]> {
+    return await this.userRepository.findNearestUsersByUserId(userId, limit);
+  }
 }

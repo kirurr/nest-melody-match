@@ -13,6 +13,7 @@ describe('UserService', () => {
     findUserByEmail: jest.fn(),
     createUser: jest.fn(),
     createUserPreferences: jest.fn(),
+    findNearestUsersByUserId: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -112,6 +113,35 @@ describe('UserService', () => {
       expect(mockUserRepository.createUserPreferences).toHaveBeenCalledWith(
         data,
       ); 
+    });
+  });
+  describe('findNearestUsersByUserId', () => {
+    it('should call userRepository.findNearestUsersByUserId with correct parameters', async () => {
+      const userId = 1;
+      const limit = 5;
+      const mockUsers: User[] = [
+        { id: 2, email: 'user2@example.com', name: 'User 2' } as User,
+        { id: 3, email: 'user3@example.com', name: 'User 3' } as User,
+      ];
+  
+      mockUserRepository.findNearestUsersByUserId = jest.fn().mockResolvedValue(mockUsers);
+  
+      const result = await userService.findNearestUsersByUserId(userId, limit);
+  
+      expect(result).toEqual(mockUsers);
+      expect(mockUserRepository.findNearestUsersByUserId).toHaveBeenCalledWith(userId, limit);
+    });
+  
+    it('should return an empty array if no users are found', async () => {
+      const userId = 1;
+      const limit = 5;
+  
+      mockUserRepository.findNearestUsersByUserId = jest.fn().mockResolvedValue([]);
+  
+      const result = await userService.findNearestUsersByUserId(userId, limit);
+  
+      expect(result).toEqual([]);
+      expect(mockUserRepository.findNearestUsersByUserId).toHaveBeenCalledWith(userId, limit);
     });
   });
 });

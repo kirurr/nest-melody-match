@@ -10,6 +10,7 @@ describe('UserRepository', () => {
 
   const mockPrismaService = {
     $executeRaw: jest.fn(),
+    $queryRaw: jest.fn(),
     user: {
       findUnique: jest.fn(),
       create: jest.fn(),
@@ -38,7 +39,11 @@ describe('UserRepository', () => {
   describe('findUserById', () => {
     it('should return a user if found', async () => {
       const userId = 1;
-      const user: User = { id: userId, email: 'test@example.com', name: 'Test User' } as User;
+      const user: User = {
+        id: userId,
+        email: 'test@example.com',
+        name: 'Test User',
+      } as User;
       mockPrismaService.user.findUnique.mockResolvedValue(user);
 
       const result = await userRepository.findUserById(userId);
@@ -99,25 +104,69 @@ describe('UserRepository', () => {
     });
   });
 
-describe('createUserPreferences', () => {
-  it('should insert user preferences into the database', async () => {
-    const data = {
-      userId: 1,
-      genresVector: [1, 0, 0, 0, 0],
-      desiredSex: 'MALE' as 'MALE' | 'FEMALE',
-    };
+  describe('createUserPreferences', () => {
+    it('should insert user preferences into the database', async () => {
+      const data = {
+        userId: 1,
+        genresVector: [1, 0, 0, 0, 0],
+        desiredSex: 'MALE' as 'MALE' | 'FEMALE',
+      };
 
-    mockPrismaService.$executeRaw.mockResolvedValue(undefined); // Предполагаем, что метод ничего не возвращает
+      mockPrismaService.$executeRaw.mockResolvedValue(undefined); // Предполагаем, что метод ничего не возвращает
 
-    await userRepository.createUserPreferences(data);
+      await userRepository.createUserPreferences(data);
 
-    expect(mockPrismaService.$executeRaw).toHaveBeenCalledWith(
-      expect.any(Array),
-      data.userId,
-      data.genresVector,
-      data.desiredSex,
-    );
+      expect(mockPrismaService.$executeRaw).toHaveBeenCalledWith(
+        expect.any(Array),
+        data.userId,
+        data.genresVector,
+        data.desiredSex,
+      );
+    });
+  });
+  describe('findNearestUsersByUserId', () => {
+    it('should return nearest users based on genres vector', async () => {
+      const userId = 1;
+      const limit = 5;
+      const mockUsers: User[] = [
+        { id: 2, email: 'user2@example.com', name: 'User 2' } as User,
+        { id: 3, email: 'user3@example.com', name: 'User 3' } as User,
+      ];
+
+      mockPrismaService.$queryRaw.mockResolvedValue(mockUsers);
+
+      const result = await userRepository.findNearestUsersByUserId(
+        userId,
+        limit,
+      );
+
+      expect(result).toEqual(mockUsers);
+      expect(mockPrismaService.$queryRaw).toHaveBeenCalledWith(
+        expect.any(Array),
+        userId,
+        userId,
+        limit,
+      );
+    });
+
+    it('should return an empty array if no users are found', async () => {
+      const userId = 1;
+      const limit = 5;
+
+      mockPrismaService.$queryRaw.mockResolvedValue([]);
+
+      const result = await userRepository.findNearestUsersByUserId(
+        userId,
+        limit,
+      );
+
+      expect(result).toEqual([]);
+      expect(mockPrismaService.$queryRaw).toHaveBeenCalledWith(
+        expect.any(Array),
+        userId,
+        userId,
+        limit,
+      );
+    });
   });
 });
-});
-

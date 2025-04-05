@@ -15,7 +15,10 @@ export class AuthService {
     private readonly refreshTokenService: RefreshTokenService,
   ) {}
 
-  public async handleAuth(userData: { email: string; name: string }): Promise<TokensPairDTO> {
+  public async handleAuth(userData: {
+    email: string;
+    name: string;
+  }): Promise<TokensPairDTO> {
     let user: User | null;
     user = await this.userService.findUserByEmail(userData.email);
 
@@ -48,6 +51,7 @@ export class AuthService {
       } else {
         try {
           await this.jwtService.verifyRefreshToken(refreshToken);
+          //eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
           refreshToken = await this.jwtService.signRefreshToken(user.id);
           await this.refreshTokenService.updateByUserId(user.id, refreshToken);
@@ -63,6 +67,7 @@ export class AuthService {
   public async googleAuth(
     code: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_tokens, userData] =
       await this.googleAuthService.retireveTokensAndUserData(code);
 
