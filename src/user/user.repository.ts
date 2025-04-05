@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { Prisma, User, UserData } from '@prisma/client';
+import { PreferencesSex, Prisma, User, UserData } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -33,7 +33,7 @@ export class UserRepository {
   async createUserPreferences(data: {
     userId: number;
     genresVector: number[];
-    desiredSex: 'MALE' | 'FEMALE';
+    desiredSex: PreferencesSex;
   }): Promise<void> {
     await this.db.$executeRaw`
       INSERT INTO "UserPreferences" ("userId", "genresVector", "desiredSex")

@@ -145,6 +145,7 @@ describe('UserRepository', () => {
         expect.any(Array),
         userId,
         userId,
+        userId,
         limit,
       );
     });
@@ -163,6 +164,7 @@ describe('UserRepository', () => {
       expect(result).toEqual([]);
       expect(mockPrismaService.$queryRaw).toHaveBeenCalledWith(
         expect.any(Array),
+        userId,
         userId,
         userId,
         limit,
