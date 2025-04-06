@@ -18,13 +18,15 @@ export class AuthService {
   public async handleAuth(userData: {
     email: string;
     name: string;
-  }): Promise<TokensPairDTO> {
+  }): Promise<[TokensPairDTO, boolean]> {
+    let isNewUser = false;
     let user: User | null;
     user = await this.userService.findUserByEmail(userData.email);
 
     let refreshToken: string | null;
 
     if (!user) {
+      isNewUser = true;
       user = await this.userService.createUser({
         name: userData.name,
         email: userData.email,
@@ -61,12 +63,12 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAccessToken(user.id);
 
-    return { accessToken, refreshToken };
+    return [{ accessToken, refreshToken }, isNewUser];
   }
 
   public async googleAuth(
     code: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  ): Promise<[TokensPairDTO, boolean]> {
     //eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_tokens, userData] =
       await this.googleAuthService.retireveTokensAndUserData(code);

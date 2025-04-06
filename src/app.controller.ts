@@ -3,6 +3,7 @@ import { AppService } from './app.service';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthorizedUserId } from './decorators/authorized-user-id.decorator';
 import { GenreService } from './genre/genre.service';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller()
 export class AppController {
@@ -13,6 +14,7 @@ export class AppController {
 
   @UseGuards(AuthGuard)
   @Get('guard')
+  @ApiBearerAuth()
   getGuard(@AuthorizedUserId() userId: number) {
     return userId;
   }

@@ -15,7 +15,7 @@ import { Response } from 'express';
 import { AuthGuard } from '../auth/auth.guard';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { AuthorizedUserId } from '../decorators/authorized-user-id.decorator';
-import { createUserPreferencesDTO } from './dto/create-user-preferences.dto';
+import { CreateUserPreferencesDTO } from './dto/create-user-preferences.dto';
 import { GenreService } from '../genre/genre.service';
 import { FindNearestUsersDTO } from './dto/find-nearest-users.dto';
 
@@ -54,7 +54,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Post('preferences')
   async createUserPreferences(
-    @Body(new ValidationPipe()) body: createUserPreferencesDTO,
+    @Body(new ValidationPipe()) body: CreateUserPreferencesDTO,
     @Res() res: Response,
     @AuthorizedUserId() userId: number,
   ) {

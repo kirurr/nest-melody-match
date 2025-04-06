@@ -7,7 +7,7 @@ import {
   IsNumber,
 } from 'class-validator';
 
-export class createUserPreferencesDTO {
+export class CreateUserPreferencesDTO {
   @IsArray()
   @ArrayNotEmpty()
   @IsNumber({}, { each: true })

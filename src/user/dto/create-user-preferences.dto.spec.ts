@@ -1,16 +1,16 @@
 import { ArgumentMetadata, BadRequestException, ValidationPipe } from "@nestjs/common";
-import { createUserPreferencesDTO } from "./create-user-preferences.dto";
+import { CreateUserPreferencesDTO } from "./create-user-preferences.dto";
 
 describe('CreateUserPreferencesDTO', () => {
 	const target = new ValidationPipe();
 	const metadata: ArgumentMetadata = {
 		type: 'query',
-		metatype: createUserPreferencesDTO,
+		metatype: CreateUserPreferencesDTO,
 		data: '',
 	};
 
 	it('should pass with correct data', () => {
-		const correctUserData: createUserPreferencesDTO = {
+		const correctUserData: CreateUserPreferencesDTO = {
 			desiredSex: 'MALE',
 			genresIds: [1, 1, 1, 1, 1]
 		}
