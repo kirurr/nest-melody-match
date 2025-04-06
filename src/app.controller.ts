@@ -1,9 +1,9 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
-import { AuthGuard } from './auth/auth.guard';
 import { AuthorizedUserId } from './decorators/authorized-user-id.decorator';
 import { GenreService } from './genre/genre.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller()
 export class AppController {
@@ -12,11 +12,12 @@ export class AppController {
     private readonly genreService: GenreService,
   ) {}
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Get('guard')
-  @ApiBearerAuth()
-  getGuard(@AuthorizedUserId() userId: number) {
-    return userId;
+  // @ApiBearerAuth()
+  getGuard() {
+    return {nigger: 'nigger'};
   }
 
   @Get('genre')

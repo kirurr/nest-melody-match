@@ -1,103 +1,61 @@
 import { Injectable } from '@nestjs/common';
-import { GoogleAuthService } from './google-auth/google-auth.service';
-import { UserService } from '../user/user.service';
-import { User } from '@prisma/client';
-import { JwtService } from '../jwt/jwt.service';
-import { RefreshTokenService } from '../refresh-token/refresh-token.service';
-import { TokensPairDTO } from './dto/tokens-pair.dto';
+import { JwtService } from '@nestjs/jwt';
+import { RefreshTokenService } from 'src/refresh-token/refresh-token.service';
+import { UserService } from 'src/user/user.service';
+import { GoogleUser } from './auth.types';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly googleAuthService: GoogleAuthService,
-    private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly refreshTokenService: RefreshTokenService,
+    private readonly userService: UserService,
   ) {}
 
-  public async handleAuth(userData: {
-    email: string;
-    name: string;
-  }): Promise<[TokensPairDTO, boolean]> {
-    let isNewUser = false;
-    let user: User | null;
-    user = await this.userService.findUserByEmail(userData.email);
-
-    let refreshToken: string | null;
+  async handleOAuth(reqUser: GoogleUser): Promise<{
+    access_token: string;
+    refresh_token: string;
+    isNewUser: boolean;
+  }> {
+		let isNewUser = false;
+    let user = await this.userService.findUserByEmail(reqUser.email);
+    let refresh_token: string | null;
 
     if (!user) {
-      isNewUser = true;
       user = await this.userService.createUser({
-        name: userData.name,
-        email: userData.email,
+        email: reqUser.email,
+        name: reqUser.displayName,
       });
 
-      refreshToken = await this.jwtService.signRefreshToken(user.id);
-
+      refresh_token = this.jwtService.sign(
+        { id: user.id.toString() },
+        { expiresIn: '7d' },
+      );
       await this.refreshTokenService.encryptRefreshTokenAndSaveToDB(
-        refreshToken,
+        refresh_token,
         user.id,
       );
+
+			isNewUser = true;
     } else {
-      refreshToken =
+      refresh_token =
         await this.refreshTokenService.getDecryptedRefreshTokenByUserId(
           user.id,
         );
 
-      if (!refreshToken) {
-        refreshToken = await this.jwtService.signRefreshToken(user.id);
-        await this.refreshTokenService.encryptRefreshTokenAndSaveToDB(
-          refreshToken,
-          user.id,
+      if (!refresh_token) {
+        refresh_token = this.jwtService.sign(
+          { id: user.id.toString() },
+          { expiresIn: '7d' },
         );
-      } else {
-        try {
-          await this.jwtService.verifyRefreshToken(refreshToken);
-          //eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
-          refreshToken = await this.jwtService.signRefreshToken(user.id);
-          await this.refreshTokenService.updateByUserId(user.id, refreshToken);
-        }
+        await this.refreshTokenService.updateByUserId(user.id, refresh_token);
       }
     }
 
-    const accessToken = await this.jwtService.signAccessToken(user.id);
-
-    return [{ accessToken, refreshToken }, isNewUser];
-  }
-
-  public async googleAuth(
-    code: string,
-  ): Promise<[TokensPairDTO, boolean]> {
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_tokens, userData] =
-      await this.googleAuthService.retireveTokensAndUserData(code);
-
-    return await this.handleAuth(userData);
-  }
-
-  public async getNewTokensPairByRefreshToken(
-    refreshToken: string,
-  ): Promise<TokensPairDTO> {
-    const decryptedRefreshTokenData = await this.jwtService
-      .verifyRefreshToken(refreshToken)
-      .catch(() => {
-        throw new Error('Refresh token is invalid');
-      });
-
-    const newRefreshToken = await this.jwtService.signRefreshToken(
-      decryptedRefreshTokenData.userId,
+    const access_token = this.jwtService.sign(
+      { id: user.id.toString() },
+      { expiresIn: '1h' },
     );
-
-    await this.refreshTokenService.updateByUserId(
-      decryptedRefreshTokenData.userId,
-      newRefreshToken,
-    );
-
-    const newAccessToken = await this.jwtService.signAccessToken(
-      decryptedRefreshTokenData.userId,
-    );
-
-    return { refreshToken: newRefreshToken, accessToken: newAccessToken };
-  }
+		return { access_token, refresh_token, isNewUser };
+	}
 }

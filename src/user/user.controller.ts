@@ -12,7 +12,7 @@ import {
 import { CreateUserDataDTO } from './dto/create-user-data.dto';
 import { UserService } from './user.service';
 import { Response } from 'express';
-import { AuthGuard } from '../auth/auth.guard';
+// import { AuthGuard } from '../auth/auth.guard';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { AuthorizedUserId } from '../decorators/authorized-user-id.decorator';
 import { CreateUserPreferencesDTO } from './dto/create-user-preferences.dto';
@@ -26,7 +26,7 @@ export class UserController {
     private readonly genreService: GenreService,
   ) {}
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Post('data')
   async createUserData(
     @Body(new ValidationPipe()) body: CreateUserDataDTO,
@@ -51,7 +51,7 @@ export class UserController {
     res.sendStatus(201);
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Post('preferences')
   async createUserPreferences(
     @Body(new ValidationPipe()) body: CreateUserPreferencesDTO,
@@ -81,7 +81,7 @@ export class UserController {
     res.sendStatus(201);
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Get('search')
   async searchNearestUsers(
     @Query(new ValidationPipe()) query: FindNearestUsersDTO,

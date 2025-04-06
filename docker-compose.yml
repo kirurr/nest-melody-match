@@ -16,11 +16,17 @@ services:
           ignore:
             - node_modules
 
-        - path: ./prisma
+        - path: ./src
+          target: /usr/src/app/prisma
           action: rebuild
 
-        - path: ./package.json
+        - path: ./src
+          target: /usr/src/app/package.json
           action: rebuild
+
+        - path: ./src
+          target: /usr/src/app/.env
+          action: sync
   db:
     image: pgvector/pgvector:pg17
     restart: always
