@@ -2,7 +2,7 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { GenreService } from './genre/genre.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Controller()
 export class AppController {
@@ -11,12 +11,11 @@ export class AppController {
     private readonly genreService: GenreService,
   ) {}
 
-  // @UseGuards(AuthGuard)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get('guard')
   @ApiBearerAuth()
   getGuard() {
-    return {nigger: 'nigger'};
+    return { message: 'Hello world!' };
   }
 
   @Get('genre')

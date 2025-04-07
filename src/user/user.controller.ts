@@ -13,11 +13,12 @@ import { CreateUserDataDTO } from './dto/create-user-data.dto';
 import { UserService } from './user.service';
 import { Response } from 'express';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { AuthorizedUserId } from '../decorators/authorized-user-id.decorator';
+import { AuthorizedUser } from '../decorators/authorized-user.decorator';
 import { CreateUserPreferencesDTO } from './dto/create-user-preferences.dto';
 import { GenreService } from '../genre/genre.service';
 import { FindNearestUsersDTO } from './dto/find-nearest-users.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthorizedUserDTO } from 'src/auth/dto/authorized-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -31,14 +32,14 @@ export class UserController {
   async createUserData(
     @Body(new ValidationPipe()) body: CreateUserDataDTO,
     @Res() res: Response,
-    @AuthorizedUserId() userId: number,
+    @AuthorizedUser() user: AuthorizedUserDTO,
   ) {
     try {
       await this.userService.createUserData({
         age: body.age,
         sex: body.sex,
         displayName: body.displayName,
-        user: { connect: { id: userId } },
+        user: { connect: { id: user.id } },
       });
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {
@@ -56,7 +57,7 @@ export class UserController {
   async createUserPreferences(
     @Body(new ValidationPipe()) body: CreateUserPreferencesDTO,
     @Res() res: Response,
-    @AuthorizedUserId() userId: number,
+    @AuthorizedUser() user: AuthorizedUserDTO,
   ) {
     const userVector = await this.genreService.calculateUserGenreVector(
       body.genresIds,
@@ -65,7 +66,7 @@ export class UserController {
     try {
       await this.userService.createUserPreferences({
         desiredSex: body.desiredSex,
-        userId: userId,
+        userId: user.id,
         genresVector: userVector,
       });
     } catch (e) {
@@ -85,7 +86,7 @@ export class UserController {
   @Get('search')
   async searchNearestUsers(
     @Query(new ValidationPipe()) query: FindNearestUsersDTO,
-    @AuthorizedUserId() userId: number,
+    @AuthorizedUser() userId: number,
     @Res() res: Response,
   ) {
     res.send(

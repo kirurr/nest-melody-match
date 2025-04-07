@@ -4,3 +4,7 @@ export type GoogleUser = {
 	picture: string
 	accessToken: string
 }
+
+export type AuthorizedUser = {
+	id: number
+}
