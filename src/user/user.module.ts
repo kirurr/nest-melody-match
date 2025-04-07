@@ -3,12 +3,10 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '../prisma.service';
 import { UserController } from './user.controller';
-import { CustomJwtModule } from '../jwt/jwt.module';
 import { GenreModule } from '../genre/genre.module';
 
 @Module({
 	imports: [
-		CustomJwtModule,
 		GenreModule
 	],
   providers: [UserService, UserRepository, PrismaService],

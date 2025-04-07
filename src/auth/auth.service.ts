@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshTokenService } from 'src/refresh-token/refresh-token.service';
-import { UserService } from 'src/user/user.service';
+import { RefreshTokenService } from '../refresh-token/refresh-token.service';
+import { UserService } from '../user/user.service';
 import { GoogleUser } from './auth.types';
 
 @Injectable()
@@ -13,49 +13,49 @@ export class AuthService {
   ) {}
 
   async handleOAuth(reqUser: GoogleUser): Promise<{
-    access_token: string;
-    refresh_token: string;
+    accessToken: string;
+    refreshToken: string;
     isNewUser: boolean;
   }> {
 		let isNewUser = false;
     let user = await this.userService.findUserByEmail(reqUser.email);
-    let refresh_token: string | null;
+    let refreshToken: string | null;
 
     if (!user) {
       user = await this.userService.createUser({
         email: reqUser.email,
-        name: reqUser.displayName,
+        name: reqUser.name,
       });
 
-      refresh_token = this.jwtService.sign(
+      refreshToken = this.jwtService.sign(
         { id: user.id.toString() },
         { expiresIn: '7d' },
       );
       await this.refreshTokenService.encryptRefreshTokenAndSaveToDB(
-        refresh_token,
+        refreshToken,
         user.id,
       );
 
 			isNewUser = true;
     } else {
-      refresh_token =
+      refreshToken =
         await this.refreshTokenService.getDecryptedRefreshTokenByUserId(
           user.id,
         );
 
-      if (!refresh_token) {
-        refresh_token = this.jwtService.sign(
+      if (!refreshToken) {
+        refreshToken = this.jwtService.sign(
           { id: user.id.toString() },
           { expiresIn: '7d' },
         );
-        await this.refreshTokenService.updateByUserId(user.id, refresh_token);
+        await this.refreshTokenService.updateByUserId(user.id, refreshToken);
       }
     }
 
-    const access_token = this.jwtService.sign(
+    const accessToken = this.jwtService.sign(
       { id: user.id.toString() },
       { expiresIn: '1h' },
     );
-		return { access_token, refresh_token, isNewUser };
+		return { accessToken, refreshToken, isNewUser };
 	}
 }

@@ -20,7 +20,8 @@ export class AuthController {
     @Req() req: Request & { user: GoogleUser },
     @Res() res: Response,
   ) {
-    const { access_token, refresh_token, isNewUser } =
+    //TODO: encapsulate user to its own decorator for type safe access
+    const { accessToken: access_token, refreshToken: refresh_token, isNewUser } =
       await this.authService.handleOAuth(req.user);
     if (isNewUser) res.send({ access_token, refresh_token });
     else res.status(201).send({ access_token, refresh_token });

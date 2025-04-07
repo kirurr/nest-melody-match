@@ -1,5 +1,5 @@
 export type GoogleUser = {
-	displayName: string;
+	name: string;
 	email: string
 	picture: string
 	accessToken: string

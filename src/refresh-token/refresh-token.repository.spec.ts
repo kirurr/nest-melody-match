@@ -5,6 +5,7 @@ import { ActiveRefreshToken } from '@prisma/client';
 
 describe('RefreshTokenRepository', () => {
   let refreshTokenRepository: RefreshTokenRepository;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let prismaService: PrismaService;
 
   const mockPrismaService = {
