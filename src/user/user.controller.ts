@@ -18,7 +18,7 @@ import { CreateUserPreferencesDTO } from './dto/create-user-preferences.dto';
 import { GenreService } from '../genre/genre.service';
 import { FindNearestUsersDTO } from './dto/find-nearest-users.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthorizedUserDTO } from 'src/auth/dto/authorized-user.dto';
+import { AuthorizedUserDTO } from '../auth/dto/authorized-user.dto';
 
 @Controller('user')
 export class UserController {

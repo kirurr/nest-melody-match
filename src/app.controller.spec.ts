@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from './prisma.service';
-import { CustomJwtModule } from './jwt/jwt.module';
 import { GenreModule } from './genre/genre.module';
 
 describe('AppController', () => {
@@ -12,7 +11,7 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      imports: [ConfigModule.forRoot({ isGlobal: true }), CustomJwtModule, GenreModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true }), GenreModule],
       providers: [AppService, PrismaService],
     }).compile();
 
