@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { PreferencesSex, Prisma, User, UserData } from '@prisma/client';
+import { FindNearestUsers } from './user.types';
 
 @Injectable()
 export class UserRepository {
@@ -41,10 +42,11 @@ export class UserRepository {
     `;
   }
 
-  async findNearestUsersByUserId(
-    userId: number,
-    limit: number,
-  ): Promise<User[]> {
+  async findNearestUsersByUserId({
+    userId,
+    limit,
+    seen
+  }: FindNearestUsers): Promise<User[]> {
     const users: User[] = await this.db.$queryRaw`
         SELECT u.*
         FROM "User" AS u
@@ -53,6 +55,7 @@ export class UserRepository {
         JOIN "UserPreferences" AS up1 ON up1."userId" = ${userId}
         JOIN "UserData" AS ud1 ON ud1."userId" = ${userId}
         WHERE u."id" != ${userId}
+          AND u."id" NOT IN(${Prisma.join(seen)})
           AND 1 = 
           CASE
             WHEN up1."desiredSex" = 'BOTH' and up."desiredSex" = 'BOTH' THEN 1

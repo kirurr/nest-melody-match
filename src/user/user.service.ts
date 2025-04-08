@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { PreferencesSex, Prisma, User, UserData } from '@prisma/client';
+import { FindNearestUsers } from './user.types';
 
 @Injectable()
 export class UserService {
@@ -30,10 +31,7 @@ export class UserService {
     return await this.userRepository.createUserPreferences(data);
   }
 
-  async findNearestUsersByUserId(
-    userId: number,
-    limit: number,  
-  ): Promise<User[]> {
-    return await this.userRepository.findNearestUsersByUserId(userId, limit);
+  async findNearestUsersByUserId(data: FindNearestUsers): Promise<User[]> {
+    return await this.userRepository.findNearestUsersByUserId(data);
   }
 }

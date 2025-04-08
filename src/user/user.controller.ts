@@ -106,7 +106,7 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Returns list of nearest users',
-    type: [UserDto]
+    type: [UserDto],
   })
   @UseGuards(AuthGuard('jwt'))
   @Get('search')
@@ -116,10 +116,11 @@ export class UserController {
     @Res() res: Response,
   ) {
     res.send(
-      await this.userService.findNearestUsersByUserId(
+      await this.userService.findNearestUsersByUserId({
         userId,
-        query ? +query.limit : 2,
-      ),
+        limit: query.limit,
+        seen: query.seen,
+      }),
     );
   }
 }

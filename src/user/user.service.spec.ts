@@ -108,40 +108,62 @@ describe('UserService', () => {
         .fn()
         .mockResolvedValue(undefined);
 
-      await userService.createUserPreferences(data); 
+      await userService.createUserPreferences(data);
 
       expect(mockUserRepository.createUserPreferences).toHaveBeenCalledWith(
         data,
-      ); 
+      );
     });
   });
   describe('findNearestUsersByUserId', () => {
     it('should call userRepository.findNearestUsersByUserId with correct parameters', async () => {
       const userId = 1;
       const limit = 5;
+      const seen = [1, 2, 3];
       const mockUsers: User[] = [
         { id: 2, email: 'user2@example.com', name: 'User 2' } as User,
         { id: 3, email: 'user3@example.com', name: 'User 3' } as User,
       ];
-  
-      mockUserRepository.findNearestUsersByUserId = jest.fn().mockResolvedValue(mockUsers);
-  
-      const result = await userService.findNearestUsersByUserId(userId, limit);
-  
+
+      mockUserRepository.findNearestUsersByUserId = jest
+        .fn()
+        .mockResolvedValue(mockUsers);
+
+      const result = await userService.findNearestUsersByUserId({
+        userId,
+        limit,
+        seen,
+      });
+
       expect(result).toEqual(mockUsers);
-      expect(mockUserRepository.findNearestUsersByUserId).toHaveBeenCalledWith(userId, limit);
+      expect(mockUserRepository.findNearestUsersByUserId).toHaveBeenCalledWith({
+        userId,
+        limit,
+        seen,
+      });
     });
-  
+
     it('should return an empty array if no users are found', async () => {
       const userId = 1;
       const limit = 5;
-  
-      mockUserRepository.findNearestUsersByUserId = jest.fn().mockResolvedValue([]);
-  
-      const result = await userService.findNearestUsersByUserId(userId, limit);
-  
+      const seen = [1, 2, 3];
+
+      mockUserRepository.findNearestUsersByUserId = jest
+        .fn()
+        .mockResolvedValue([]);
+
+      const result = await userService.findNearestUsersByUserId({
+        userId,
+        limit,
+        seen,
+      });
+
       expect(result).toEqual([]);
-      expect(mockUserRepository.findNearestUsersByUserId).toHaveBeenCalledWith(userId, limit);
+      expect(mockUserRepository.findNearestUsersByUserId).toHaveBeenCalledWith({
+        userId,
+        limit,
+        seen,
+      });
     });
   });
 });
