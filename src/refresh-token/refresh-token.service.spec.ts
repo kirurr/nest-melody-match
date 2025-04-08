@@ -5,7 +5,9 @@ import { CryptoService } from './crypto-service';
 
 describe('RefreshTokenService', () => {
   let refreshTokenService: RefreshTokenService;
+  //eslint-disable-next-line
   let refreshTokenRepository: RefreshTokenRepository;
+  //eslint-disable-next-line
   let cryptoService: CryptoService;
 
   const mockRefreshTokenRepository = {
@@ -89,10 +91,54 @@ describe('RefreshTokenService', () => {
     it('should update the refresh token for the given userId', async () => {
       const userId = 1;
       const newToken = 'updated-refresh-token';
+      const encryptedToken = 'encrypted-refresh-token';
+      mockCryptoService.encryptRefreshToken.mockReturnValue(encryptedToken);
 
       await refreshTokenService.updateByUserId(userId, newToken);
 
-      expect(mockRefreshTokenRepository.updateByUserId).toHaveBeenCalledWith(userId, newToken);
+      expect(mockCryptoService.encryptRefreshToken).toHaveBeenCalledWith(newToken);
+      expect(mockRefreshTokenRepository.updateByUserId).toHaveBeenCalledWith(userId, encryptedToken);
+    });
+  });
+
+  describe('checkRefreshToken', () => {
+    it('should return false if no refresh token is found in the database', async () => {
+      const userId = 1;
+      const refreshToken = 'some-refresh-token';
+
+      mockRefreshTokenRepository.findByUserId.mockResolvedValue(null);
+
+      const result = await refreshTokenService.checkRefreshToken(refreshToken, userId);
+      expect(result).toBe(false);
+      expect(mockRefreshTokenRepository.findByUserId).toHaveBeenCalledWith(userId);
+    });
+
+    it('should return true if the decrypted refresh token matches', async () => {
+      const userId = 1;
+      const refreshToken = 'some-refresh-token';
+      const mockStoredToken = { refreshToken: 'encrypted-refresh-token' };
+
+      mockRefreshTokenRepository.findByUserId.mockResolvedValue(mockStoredToken);
+      mockCryptoService.decryptRefreshToken.mockResolvedValue(refreshToken);
+
+      const result = await refreshTokenService.checkRefreshToken(refreshToken, userId);
+      expect(result).toBe(true);
+      expect(mockRefreshTokenRepository.findByUserId).toHaveBeenCalledWith(userId);
+      expect(mockCryptoService.decryptRefreshToken).toHaveBeenCalledWith(mockStoredToken.refreshToken);
+    });
+
+    it('should return false if the decrypted refresh token does not match', async () => {
+      const userId = 1;
+      const refreshToken = 'some-refresh-token';
+      const mockStoredToken = { refreshToken: 'encrypted-refresh-token' };
+
+      mockRefreshTokenRepository.findByUserId.mockResolvedValue(mockStoredToken);
+      mockCryptoService.decryptRefreshToken.mockResolvedValue('different-refresh-token');
+
+      const result = await refreshTokenService.checkRefreshToken(refreshToken, userId);
+      expect(result).toBe(false);
+      expect(mockRefreshTokenRepository.findByUserId).toHaveBeenCalledWith(userId);
+      expect(mockCryptoService.decryptRefreshToken).toHaveBeenCalledWith(mockStoredToken.refreshToken);
     });
   });
 });

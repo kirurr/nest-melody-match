@@ -19,6 +19,13 @@ import { GenreService } from '../genre/genre.service';
 import { FindNearestUsersDTO } from './dto/find-nearest-users.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthorizedUserDTO } from '../auth/dto/authorized-user.dto';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+import { UserDto } from './dto/user-dto';
 
 @Controller('user')
 export class UserController {
@@ -27,6 +34,13 @@ export class UserController {
     private readonly genreService: GenreService,
   ) {}
 
+  @ApiCreatedResponse({
+    description: 'UserData is created',
+  })
+  @ApiBadRequestResponse({
+    description: 'UserData for that user already exists',
+  })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Post('data')
   async createUserData(
@@ -52,6 +66,13 @@ export class UserController {
     res.sendStatus(201);
   }
 
+  @ApiCreatedResponse({
+    description: 'UserPreferences is created',
+  })
+  @ApiBadRequestResponse({
+    description: 'UserPreferences for that user already exists',
+  })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Post('preferences')
   async createUserPreferences(
@@ -82,6 +103,11 @@ export class UserController {
     res.sendStatus(201);
   }
 
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Returns list of nearest users',
+    type: [UserDto]
+  })
   @UseGuards(AuthGuard('jwt'))
   @Get('search')
   async searchNearestUsers(
@@ -92,7 +118,7 @@ export class UserController {
     res.send(
       await this.userService.findNearestUsersByUserId(
         userId,
-        query ? +query.limit : 10,
+        query ? +query.limit : 2,
       ),
     );
   }

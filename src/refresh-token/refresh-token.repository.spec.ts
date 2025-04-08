@@ -12,7 +12,7 @@ describe('RefreshTokenRepository', () => {
     activeRefreshToken: {
       findUnique: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(),
+      upsert: jest.fn(),
     },
   };
 
@@ -109,9 +109,15 @@ describe('RefreshTokenRepository', () => {
       const newToken = 'updated-refresh-token';
       await refreshTokenRepository.updateByUserId(userId, newToken);
 
-      expect(mockPrismaService.activeRefreshToken.update).toHaveBeenCalledWith({
+      expect(mockPrismaService.activeRefreshToken.upsert).toHaveBeenCalledWith({
         where: { userId },
-        data: { refreshToken: newToken },
+        create: {
+          userId: userId,
+          refreshToken: newToken,
+        },
+        update: {
+          refreshToken: newToken,
+        }
       });
     });
   });

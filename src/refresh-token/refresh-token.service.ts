@@ -21,11 +21,13 @@ export class RefreshTokenService {
     return encryptedRefreshToken;
   }
 
-  async getDecryptedRefreshTokenByUserId(userId: number): Promise<string | null> {
+  async getDecryptedRefreshTokenByUserId(
+    userId: number,
+  ): Promise<string | null> {
     const refreshToken = await this.refreshTokenRepository.findByUserId(userId);
 
     if (!refreshToken) {
-			return null;
+      return null;
     }
 
     const decryptedToken = await this.cryptoService.decryptRefreshToken(
@@ -34,7 +36,35 @@ export class RefreshTokenService {
     return decryptedToken;
   }
 
-	async updateByUserId(userId: number, token: string): Promise<void> {
-		await this.refreshTokenRepository.updateByUserId(userId, token);
-	}
+  async updateByUserId(userId: number, token: string): Promise<void> {
+    const encryptedRefreshToken =
+      await this.cryptoService.encryptRefreshToken(token);
+
+    await this.refreshTokenRepository.updateByUserId(
+      userId,
+      encryptedRefreshToken,
+    );
+  }
+
+  async checkRefreshToken(
+    refreshToken: string,
+    userId: number,
+  ): Promise<boolean> {
+    const refreshTokenFromDB =
+      await this.refreshTokenRepository.findByUserId(userId);
+
+    if (!refreshTokenFromDB) {
+      return false;
+    }
+
+    const decryptedRefreshToken = await this.cryptoService.decryptRefreshToken(
+      refreshTokenFromDB.refreshToken,
+    );
+
+    if (decryptedRefreshToken === refreshToken) {
+      return true;
+    }
+
+    return false;
+  }
 }

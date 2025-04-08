@@ -27,13 +27,19 @@ export class RefreshTokenRepository {
   async findByUserId(userId: number): Promise<ActiveRefreshToken | null> {
     return await this.db.activeRefreshToken.findUnique({
       where: { userId: userId },
-    })
+    });
   }
 
   async updateByUserId(userId: number, token: string): Promise<void> {
-    await this.db.activeRefreshToken.update({
+    await this.db.activeRefreshToken.upsert({
       where: { userId: userId },
-      data: { refreshToken: token },
+      update: {
+        refreshToken: token,
+      },
+      create: {
+        userId: userId,
+        refreshToken: token,
+      },
     });
   }
 }
