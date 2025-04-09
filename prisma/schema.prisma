@@ -1,66 +1,75 @@
-
 generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["driverAdapters", "postgresqlExtensions"]
+    provider        = "prisma-client-js"
+    previewFeatures = ["driverAdapters", "postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  extensions = [vector]
+    provider          = "postgresql"
+    url               = env("DATABASE_URL")
+    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+    extensions        = [vector]
 }
 
 model User {
-	id Int @id @default(autoincrement())
-	email String @unique
-	name String 
-	createdAt DateTime @default(now())
-	updatedAt DateTime @updatedAt
+    id        Int      @id @default(autoincrement())
+    email     String   @unique
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-	userData UserData?
-	userPreferences UserPreferences?
-	activeRefreshToken ActiveRefreshToken?
+    userData           UserData?
+    userPreferences    UserPreferences?
+    activeRefreshToken ActiveRefreshToken?
+    whoLikes           Match[]             @relation("WhoLikes")
+    whoLiked           Match[]             @relation("WhoLiked")
 }
 
-
 model ActiveRefreshToken {
-	id Int @id @default(autoincrement())
-	user User @relation(fields: [userId], references: [id])
-	userId Int @unique 
-	refreshToken String @unique
+    id           Int    @id @default(autoincrement())
+    user         User   @relation(fields: [userId], references: [id])
+    userId       Int    @unique
+    refreshToken String @unique
 }
 
 enum Sex {
-	MALE
-	FEMALE
+    MALE
+    FEMALE
 }
 
 enum PreferencesSex {
-	MALE
-	FEMALE
-	BOTH
+    MALE
+    FEMALE
+    BOTH
 }
 
 model UserData {
-	id Int @id @default(autoincrement())
-	user User @relation(fields: [userId], references: [id])
-	userId Int @unique
-	age Int 
-	sex Sex 
-	displayName String
+    id          Int    @id @default(autoincrement())
+    user        User   @relation(fields: [userId], references: [id])
+    userId      Int    @unique
+    age         Int
+    sex         Sex
+    displayName String
 }
 
 model UserPreferences {
-	id Int @id @default(autoincrement())
-	user User @relation(fields: [userId], references: [id])
-	userId Int @unique
-	genresVector Unsupported("vector(5)")?
-	desiredSex PreferencesSex
+    id           Int                       @id @default(autoincrement())
+    user         User                      @relation(fields: [userId], references: [id])
+    userId       Int                       @unique
+    genresVector Unsupported("vector(5)")?
+    desiredSex   PreferencesSex
 }
 
 model Genre {
-	id Int @id @default(autoincrement())
-	name String @unique
-	vector Unsupported("vector(5)")?
+    id     Int                       @id @default(autoincrement())
+    name   String                    @unique
+    vector Unsupported("vector(5)")?
+}
+
+model Match {
+    id          Int @id @default(autoincrement())
+    userId      Int
+    likedUserId Int
+
+    whoLikes User @relation("WhoLikes", fields: [userId], references: [id])
+    whoLiked User @relation("WhoLiked", fields: [likedUserId], references: [id])
 }
