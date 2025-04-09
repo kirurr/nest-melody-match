@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '../prisma.service';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 
 describe('UserRepository', () => {
   let userRepository: UserRepository;
@@ -128,6 +128,7 @@ describe('UserRepository', () => {
     it('should return nearest users based on genres vector', async () => {
       const userId = 1;
       const limit = 5;
+      const seen = [1, 2, 3];
       const mockUsers: User[] = [
         { id: 2, email: 'user2@example.com', name: 'User 2' } as User,
         { id: 3, email: 'user3@example.com', name: 'User 3' } as User,
@@ -135,10 +136,11 @@ describe('UserRepository', () => {
 
       mockPrismaService.$queryRaw.mockResolvedValue(mockUsers);
 
-      const result = await userRepository.findNearestUsersByUserId(
+      const result = await userRepository.findNearestUsersByUserId({
         userId,
         limit,
-      );
+        seen
+    });
 
       expect(result).toEqual(mockUsers);
       expect(mockPrismaService.$queryRaw).toHaveBeenCalledWith(
@@ -146,6 +148,7 @@ describe('UserRepository', () => {
         userId,
         userId,
         userId,
+        Prisma.join(seen),
         limit,
       );
     });
@@ -153,13 +156,15 @@ describe('UserRepository', () => {
     it('should return an empty array if no users are found', async () => {
       const userId = 1;
       const limit = 5;
+      const seen = [1, 2, 3];
 
       mockPrismaService.$queryRaw.mockResolvedValue([]);
 
-      const result = await userRepository.findNearestUsersByUserId(
+      const result = await userRepository.findNearestUsersByUserId({
         userId,
         limit,
-      );
+        seen
+    });
 
       expect(result).toEqual([]);
       expect(mockPrismaService.$queryRaw).toHaveBeenCalledWith(
@@ -167,6 +172,7 @@ describe('UserRepository', () => {
         userId,
         userId,
         userId,
+        Prisma.join(seen),
         limit,
       );
     });
