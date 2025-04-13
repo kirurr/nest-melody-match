@@ -2,10 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { PreferencesSex, Prisma, User, UserData } from '@prisma/client';
 import { FindNearestUsers } from './user.types';
+import { UserDto } from './dto/user-dto';
 
 @Injectable()
 export class UserRepository {
   constructor(private readonly db: PrismaService) {}
+
+  async getUser(id: number): Promise<UserDto | null> {
+    return await this.db.user.findUnique({
+      where: { id },
+      include: {
+        userData: true,
+        userPreferences: true,
+      },
+    });
+  }
 
   async findUserById(id: number): Promise<User | null> {
     return await this.db.user.findUnique({

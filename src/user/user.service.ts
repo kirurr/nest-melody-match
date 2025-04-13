@@ -2,10 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { PreferencesSex, Prisma, User, UserData } from '@prisma/client';
 import { FindNearestUsers } from './user.types';
+import { UserDto } from './dto/user-dto';
 
 @Injectable()
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
+
+  async getUser(id: number): Promise<UserDto | null> {
+    return await this.userRepository.getUser(id);
+  }
 
   async findUserById(id: number): Promise<User | null> {
     return await this.userRepository.findUserById(id);

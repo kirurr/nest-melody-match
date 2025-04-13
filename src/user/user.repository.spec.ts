@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '../prisma.service';
 import { Prisma, User } from '@prisma/client';
+import { UserDto } from './dto/user-dto';
 
 describe('UserRepository', () => {
   let userRepository: UserRepository;
@@ -61,6 +62,48 @@ describe('UserRepository', () => {
       expect(result).toBeNull();
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
+      });
+    });
+  });
+
+  describe('getUser', () => {
+    it('should return a user if found', async () => {
+      const id = 1;
+      const user: UserDto = {
+        id: id,
+        email: 'test@example.com',
+        name: 'Test User',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userData: null,
+        userPreferences: null,
+      };
+
+      mockPrismaService.user.findUnique.mockResolvedValue(user);
+
+      const result = await userRepository.getUser(id);
+      expect(result).toEqual(user);
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { id },
+        include: {
+          userData: true,
+          userPreferences: true,
+        },
+      });
+    });
+
+    it('should return null if user not found', async () => {
+      const id = 1;
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+      const result = await userRepository.getUser(id);
+      expect(result).toBeNull();
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { id },
+        include: {
+          userData: true,
+          userPreferences: true,
+        },
       });
     });
   });
@@ -139,8 +182,8 @@ describe('UserRepository', () => {
       const result = await userRepository.findNearestUsersByUserId({
         userId,
         limit,
-        seen
-    });
+        seen,
+      });
 
       expect(result).toEqual(mockUsers);
       expect(mockPrismaService.$queryRaw).toHaveBeenCalledWith(
@@ -163,9 +206,9 @@ describe('UserRepository', () => {
       const result = await userRepository.findNearestUsersByUserId({
         userId,
         limit,
-        seen
-    });
-  
+        seen,
+      });
+
       expect(result).toEqual([]);
       expect(mockPrismaService.$queryRaw).toHaveBeenCalledWith(
         expect.any(Array),

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { Prisma, User } from '@prisma/client';
+import { UserDto } from './dto/user-dto';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -14,6 +15,7 @@ describe('UserService', () => {
     createUser: jest.fn(),
     createUserPreferences: jest.fn(),
     findNearestUsersByUserId: jest.fn(),
+    getUser: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -35,6 +37,34 @@ describe('UserService', () => {
     expect(userService).toBeDefined();
   });
 
+  describe('getUser', () => {
+    it('should return a user if found', async () => {
+      const userId = 1;
+      const mockUser: UserDto = {
+        id: userId,
+        email: 'test@example.com',
+        name: 'Test User',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userData: null,
+        userPreferences: null,
+      };
+      mockUserRepository.getUser.mockResolvedValue(mockUser);
+
+      const result = await userService.getUser(userId);
+      expect(result).toEqual(mockUser);
+      expect(mockUserRepository.getUser).toHaveBeenCalledWith(userId);
+    });
+
+    it('should return null if user not found', async () => {
+      const userId = 1;
+      mockUserRepository.getUser.mockResolvedValue(null);
+
+      const result = await userService.getUser(userId);
+      expect(result).toBeNull();
+      expect(mockUserRepository.getUser).toHaveBeenCalledWith(userId);
+    });
+  });
   describe('findUserById', () => {
     it('should return a user if found', async () => {
       const userId = 1;

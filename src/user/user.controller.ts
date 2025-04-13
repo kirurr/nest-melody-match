@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Post,
   Res,
   UseGuards,
@@ -20,8 +21,10 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
+import { UserDto } from './dto/user-dto';
 
 @Controller('user')
 export class UserController {
@@ -29,6 +32,20 @@ export class UserController {
     private readonly userService: UserService,
     private readonly genreService: GenreService,
   ) {}
+
+  @Get()
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get user',
+    description: 'Get user with data and preferences by id',
+  })
+  @ApiOkResponse({
+    description: 'User with data and preferences',
+    type: UserDto
+  })
+  async getUser(@AuthorizedUser() user: AuthorizedUserDTO) {
+    return await this.userService.getUser(user.id);
+  }
 
   @ApiOperation({
     summary: 'Create user data',
