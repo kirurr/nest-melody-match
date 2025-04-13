@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { Prisma, User } from '@prisma/client';
 import { UserDto } from './dto/user-dto';
+import { CreateUserPreferences } from './user.types';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -132,7 +133,8 @@ describe('UserService', () => {
         userId: 1,
         genresVector: [1, 0, 0, 0, 0],
         desiredSex: 'MALE' as 'MALE' | 'FEMALE',
-      };
+        genresIds: [1, 2, 3],
+      } as CreateUserPreferences;
 
       mockUserRepository.createUserPreferences = jest
         .fn()

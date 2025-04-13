@@ -15,7 +15,6 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { AuthorizedUser } from '../decorators/authorized-user.decorator';
 import { CreateUserPreferencesDTO } from './dto/create-user-preferences.dto';
 import { GenreService } from '../genre/genre.service';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthorizedUserDTO } from '../auth/dto/authorized-user.dto';
 import {
   ApiBadRequestResponse,
@@ -25,6 +24,7 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { UserDto } from './dto/user-dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -34,6 +34,7 @@ export class UserController {
   ) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get user',
@@ -41,7 +42,7 @@ export class UserController {
   })
   @ApiOkResponse({
     description: 'User with data and preferences',
-    type: UserDto
+    type: UserDto,
   })
   async getUser(@AuthorizedUser() user: AuthorizedUserDTO) {
     return await this.userService.getUser(user.id);
@@ -58,7 +59,7 @@ export class UserController {
     description: 'UserData for that user already exists',
   })
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Post('data')
   async createUserData(
     @Body(new ValidationPipe()) body: CreateUserDataDTO,
@@ -94,7 +95,7 @@ export class UserController {
     description: 'UserPreferences for that user already exists',
   })
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Post('preferences')
   async createUserPreferences(
     @Body(new ValidationPipe()) body: CreateUserPreferencesDTO,
@@ -110,6 +111,7 @@ export class UserController {
         desiredSex: body.desiredSex,
         userId: user.id,
         genresVector: userVector,
+        genresIds: body.genresIds,
       });
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {

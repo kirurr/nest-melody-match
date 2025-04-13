@@ -2,6 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { $Enums, UserPreferences } from '@prisma/client';
 
 export default class UserPreferencesDTO implements UserPreferences {
+	@ApiProperty({
+		isArray: true,
+	})
+	genresIds: number[];
+
   @ApiProperty()
   id: number;
 

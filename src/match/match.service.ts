@@ -7,6 +7,10 @@ import { Match } from '@prisma/client';
 export class MatchService {
   constructor(private readonly matchRepository: MatchRepository) {}
 
+  async getUnacceptedMatchesForUser(userId: number): Promise<Match[]> {
+    return await this.matchRepository.getUnacceptedMatchesForUser(userId);
+  }
+
   async createMatch(data: CreateMatch): Promise<void> {
     return await this.matchRepository.createMatch(data);
   }

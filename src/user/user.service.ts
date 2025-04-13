@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
-import { PreferencesSex, Prisma, User, UserData } from '@prisma/client';
-import { FindNearestUsers } from './user.types';
+import { Prisma, User, UserData } from '@prisma/client';
+import { CreateUserPreferences, FindNearestUsers } from './user.types';
 import { UserDto } from './dto/user-dto';
 
 @Injectable()
@@ -28,11 +28,7 @@ export class UserService {
     return await this.userRepository.createUserData(data)
   }
 
-  async createUserPreferences(data: {
-    userId: number;
-    genresVector: number[];
-    desiredSex: PreferencesSex;
-  }): Promise<void> {
+  async createUserPreferences(data: CreateUserPreferences): Promise<void> {
     return await this.userRepository.createUserPreferences(data);
   }
 

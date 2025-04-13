@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { PreferencesSex, Prisma, User, UserData } from '@prisma/client';
-import { FindNearestUsers } from './user.types';
+import { Prisma, User, UserData } from '@prisma/client';
+import { CreateUserPreferences, FindNearestUsers } from './user.types';
 import { UserDto } from './dto/user-dto';
 
 @Injectable()
@@ -42,31 +42,32 @@ export class UserRepository {
     });
   }
 
-  async createUserPreferences(data: {
-    userId: number;
-    genresVector: number[];
-    desiredSex: PreferencesSex;
-  }): Promise<void> {
+  async createUserPreferences(data: CreateUserPreferences): Promise<void> {
     await this.db.$executeRaw`
-      INSERT INTO "UserPreferences" ("userId", "genresVector", "desiredSex")
-      VALUES (${data.userId}, ${data.genresVector}::vector, ${data.desiredSex}::"Sex")
+      INSERT INTO "UserPreferences" ("userId", "genresVector", "desiredSex", "genresIds")
+      VALUES (
+        ${data.userId},
+        ${data.genresVector}::vector,
+        ${data.desiredSex}::"PreferencesSex",
+        ARRAY[${Prisma.join(data.genresIds)}]
+        )
     `;
   }
 
   async findNearestUsersByUserId({
     userId,
     limit,
-    seen
+    seen,
   }: FindNearestUsers): Promise<User[]> {
     const users: User[] = await this.db.$queryRaw`
         SELECT u.*
         FROM "User" AS u
-        JOIN "UserPreferences" AS up ON u."id" = up."userId"
-        JOIN "UserData" AS ud ON u.id = ud.id
+        JOIN "UserPreferences" AS up ON u.id = up."userId"
+        JOIN "UserData" AS ud ON u.id = ud."userId"
         JOIN "UserPreferences" AS up1 ON up1."userId" = ${userId}
         JOIN "UserData" AS ud1 ON ud1."userId" = ${userId}
-        WHERE u."id" != ${userId}
-          AND u."id" NOT IN(${Prisma.join(seen)})
+        WHERE u.id != ${userId}
+          AND u.id NOT IN(${seen.length > 0 ? Prisma.join(seen) : 0})
           AND 1 = 
           CASE
             WHEN up1."desiredSex" = 'BOTH' and up."desiredSex" = 'BOTH' THEN 1
@@ -84,11 +85,12 @@ export class UserRepository {
                   WHEN up."desiredSex" = 'MALE' THEN 'MALE' ELSE 'FEMALE'
                 END 
             THEN 1
+            ELSE 0
           END
         ORDER BY 
           up."genresVector" <-> up1."genresVector",
           ABS(ud.age - ud1.age)
-        LIMIT ${limit}`;
+        LIMIT ${limit}::int`;
     return users;
   }
 }

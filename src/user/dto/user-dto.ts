@@ -23,9 +23,26 @@ export class UserDto implements User {
   @ApiProperty()
   updatedAt: Date;
 
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+    example: {
+      desiredSex: 'MALE',
+      id: 1,
+      userId: 1,
+      genresIds: [1, 2, 3, 4, 5],
+    } as UserPreferencesDTO
+  })
   userPreferences: UserPreferencesDTO | null;
 
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+    example: {
+      age: 25,
+      displayName: 'John Doe',
+      id: 1,
+      sex: 'MALE',
+      userId: 1,
+    } as UserDataDTO
+  })
   userData: UserDataDTO | null;
 }

@@ -7,6 +7,15 @@ import { Match } from '@prisma/client';
 export class MatchRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async getUnacceptedMatchesForUser(userId: number): Promise<Match[]> {
+    return await this.prismaService.match.findMany({
+      where: {
+        likedUserId: userId,
+        isAccepted: false
+      },
+    });
+  }
+
   async createMatch(data: CreateMatch): Promise<void> {
     await this.prismaService.match.create({
       data: {
@@ -27,7 +36,14 @@ export class MatchRepository {
   async getAcceptedMatches(userId: number): Promise<Match[]> {
     return await this.prismaService.match.findMany({
       where: {
-        userId: userId,
+        OR: [
+          {
+            userId: userId,
+          },
+          {
+            likedUserId: userId,
+          },
+        ],
         isAccepted: true,
       },
     });

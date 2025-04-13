@@ -8,14 +8,13 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import { FindNearestUsersDTO } from '../user/dto/find-nearest-users.dto';
+import { FindNearestUsersDTO } from './dto/find-nearest-users.dto';
 import { UserDto } from '../user/dto/user-dto';
 import { UserService } from '../user/user.service';
 import { Response } from 'express';
@@ -25,6 +24,7 @@ import CreateMatchDTO from './dto/create-match.dto';
 import { MatchService } from './match.service';
 import MatchDTO from './dto/match.dto';
 import AcceptMatchDTO from './dto/accept-match.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('match')
 export class MatchController {
@@ -33,7 +33,21 @@ export class MatchController {
     private readonly matchService: MatchService,
   ) {}
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Returns list of unaccepted matches',
+  })
+  @ApiOperation({
+    summary: 'Get unaccepted matches',
+    description: 'Get unaccepted matches for the user',
+  })
+  @Get('unaccepted')
+  async getMatchesForUser(@AuthorizedUser() user: AuthorizedUserDTO) {
+    return await this.matchService.getUnacceptedMatchesForUser(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiBearerAuth()
   @ApiOperation({
@@ -43,6 +57,7 @@ export class MatchController {
   @ApiCreatedResponse({
     description: 'Match created successfully',
   })
+  @UseGuards(JwtAuthGuard)
   async createMatch(
     @Body(new ValidationPipe()) body: CreateMatchDTO,
     @AuthorizedUser() user: AuthorizedUserDTO,
@@ -72,7 +87,8 @@ export class MatchController {
     summary: 'Get accepted matches',
     description: 'Get accepted matches for the user',
   })
-  @Get('accept')
+  @UseGuards(JwtAuthGuard)
+  @Get('accepted')
   async getAcceptedMatches(@AuthorizedUser() user: AuthorizedUserDTO) {
     return await this.matchService.getAcceptedMatches(user.id);
   }
@@ -85,7 +101,8 @@ export class MatchController {
     summary: 'Accept a match',
     description: 'Accept a match between the user and the specified user',
   })
-  @Post('accept')
+  @UseGuards(JwtAuthGuard)
+  @Post('accepted')
   async acceptMatch(
     @Body(new ValidationPipe()) body: AcceptMatchDTO,
     @AuthorizedUser() user: AuthorizedUserDTO,
@@ -107,18 +124,30 @@ export class MatchController {
     description: 'Returns list of nearest users',
     type: [UserDto],
   })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get('find')
   async searchNearestUsers(
     @Query(new ValidationPipe()) query: FindNearestUsersDTO,
     @AuthorizedUser() user: AuthorizedUserDTO,
     @Res() res: Response,
   ) {
+    let seen: number[];
+    if (query.seen === undefined) {
+      seen = [];
+    } else if (query.seen === null) {
+      seen = [];
+    } else {
+      if (Array.isArray(query.seen)) {
+        seen = query.seen.map((id) => +id);
+      } else {
+        seen = [+query.seen];
+      }
+    }
     res.send(
       await this.userService.findNearestUsersByUserId({
         userId: user.id,
         limit: query.limit,
-        seen: query.seen,
+        seen: seen,
       }),
     );
   }
