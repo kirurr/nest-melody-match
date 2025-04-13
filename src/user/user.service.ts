@@ -20,7 +20,7 @@ export class UserService {
   }
 
   async createUserData(data: Prisma.UserDataCreateInput): Promise<UserData> {
-    return await this.userRepository.createUserData(data);
+    return await this.userRepository.createUserData(data)
   }
 
   async createUserPreferences(data: {

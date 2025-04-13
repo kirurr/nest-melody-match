@@ -16,6 +16,7 @@ import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiOperation,
 } from '@nestjs/swagger';
 import { TokensPairDTO } from './dto/tokens-pair.dto';
 import { RefreshTokenDTO } from './dto/refresh-token.dto';
@@ -25,6 +26,10 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('google/redirect')
+  @ApiOperation({
+    summary: 'Redirect to Google for authorization',
+    description: 'Redirect to Google for authorization',
+  })
   @UseGuards(AuthGuard('google'))
   @ApiOkResponse({
     description: 'User is authorized, returns access and refresh tokens',
@@ -47,6 +52,10 @@ export class AuthController {
     else res.status(201).send({ access_token, refresh_token });
   }
 
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description: 'Refresh access token by providing valid refresh token',
+  })
   @Get('refresh')
   @ApiOkResponse({
     description:

@@ -9,6 +9,10 @@ function initSwagger(app: INestApplication<any>) {
     .setTitle('Nest Melody Match')
     .setDescription('Nest Melody Match API')
     .setVersion('1.0')
+    .addGlobalResponse({
+      status: 500,
+      description: 'Internal server error',
+    })
     .addBearerAuth()
     .addOAuth2({
       type: 'oauth2',

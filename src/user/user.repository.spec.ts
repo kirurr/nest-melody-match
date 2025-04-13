@@ -165,7 +165,7 @@ describe('UserRepository', () => {
         limit,
         seen
     });
-
+  
       expect(result).toEqual([]);
       expect(mockPrismaService.$queryRaw).toHaveBeenCalledWith(
         expect.any(Array),

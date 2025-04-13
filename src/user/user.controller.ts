@@ -2,9 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Get,
   Post,
-  Query,
   Res,
   UseGuards,
   ValidationPipe,
@@ -16,16 +14,14 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { AuthorizedUser } from '../decorators/authorized-user.decorator';
 import { CreateUserPreferencesDTO } from './dto/create-user-preferences.dto';
 import { GenreService } from '../genre/genre.service';
-import { FindNearestUsersDTO } from './dto/find-nearest-users.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthorizedUserDTO } from '../auth/dto/authorized-user.dto';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiOkResponse,
+  ApiOperation,
 } from '@nestjs/swagger';
-import { UserDto } from './dto/user-dto';
 
 @Controller('user')
 export class UserController {
@@ -34,6 +30,10 @@ export class UserController {
     private readonly genreService: GenreService,
   ) {}
 
+  @ApiOperation({
+    summary: 'Create user data',
+    description: 'Create user data for signed in user',
+  })
   @ApiCreatedResponse({
     description: 'UserData is created',
   })
@@ -66,6 +66,10 @@ export class UserController {
     res.sendStatus(201);
   }
 
+  @ApiOperation({
+    summary: 'Create user preferences',
+    description: 'Create user preferences for signed in user',
+  })
   @ApiCreatedResponse({
     description: 'UserPreferences is created',
   })
@@ -101,26 +105,5 @@ export class UserController {
     }
 
     res.sendStatus(201);
-  }
-
-  @ApiBearerAuth()
-  @ApiOkResponse({
-    description: 'Returns list of nearest users',
-    type: [UserDto],
-  })
-  @UseGuards(AuthGuard('jwt'))
-  @Get('search')
-  async searchNearestUsers(
-    @Query(new ValidationPipe()) query: FindNearestUsersDTO,
-    @AuthorizedUser() userId: number,
-    @Res() res: Response,
-  ) {
-    res.send(
-      await this.userService.findNearestUsersByUserId({
-        userId,
-        limit: query.limit,
-        seen: query.seen,
-      }),
-    );
   }
 }

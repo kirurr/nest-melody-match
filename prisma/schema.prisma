@@ -21,7 +21,7 @@ model User {
     userPreferences    UserPreferences?
     activeRefreshToken ActiveRefreshToken?
     whoLikes           Match[]             @relation("WhoLikes")
-    whoLiked           Match[]             @relation("WhoLiked")
+    whoIsLiked         Match[]             @relation("WhoIsLiked")
 }
 
 model ActiveRefreshToken {
@@ -70,6 +70,7 @@ model Match {
     userId      Int
     likedUserId Int
 
-    whoLikes User @relation("WhoLikes", fields: [userId], references: [id])
-    whoLiked User @relation("WhoLiked", fields: [likedUserId], references: [id])
+    whoLikes   User    @relation("WhoLikes", fields: [userId], references: [id])
+    whoIsLiked User    @relation("WhoIsLiked", fields: [likedUserId], references: [id])
+    isAccepted Boolean @default(false)
 }
