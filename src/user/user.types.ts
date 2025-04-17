@@ -8,4 +8,5 @@ export type FindNearestUsers = {
 
 export type CreateUserPreferences = Omit<UserPreferences, 'id' >& {
   genresVector: number[];
+  genresIds: number[];
 }

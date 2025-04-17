@@ -29,7 +29,16 @@ export class UserDto implements User {
       desiredSex: 'MALE',
       id: 1,
       userId: 1,
-      genresIds: [1, 2, 3, 4, 5],
+      genres: [
+        {
+          id: 1,
+          name: 'Rock'
+        },
+        {
+          id: 2,
+          name: 'Stone'
+        },
+      ]
     } as UserPreferencesDTO
   })
   userPreferences: UserPreferencesDTO | null;

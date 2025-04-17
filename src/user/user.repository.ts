@@ -13,7 +13,11 @@ export class UserRepository {
       where: { id },
       include: {
         userData: true,
-        userPreferences: true,
+        userPreferences: {
+          include: {
+            genres: true
+          }
+        },
       },
     });
   }
@@ -44,14 +48,24 @@ export class UserRepository {
 
   async createUserPreferences(data: CreateUserPreferences): Promise<void> {
     await this.db.$executeRaw`
-      INSERT INTO "UserPreferences" ("userId", "genresVector", "desiredSex", "genresIds")
+      INSERT INTO "UserPreferences" ("userId", "genresVector", "desiredSex")
       VALUES (
         ${data.userId},
         ${data.genresVector}::vector,
-        ${data.desiredSex}::"PreferencesSex",
-        ARRAY[${Prisma.join(data.genresIds)}]
+        ${data.desiredSex}::"PreferencesSex"
         )
     `;
+
+    await this.db.userPreferences.update({
+      where: {
+        userId: data.userId,
+      },
+      data: {
+        genres: {
+          connect: data.genresIds.map((id) => ({ id })),
+        },
+      },
+    });
   }
 
   async findNearestUsersByUserId({
@@ -91,6 +105,20 @@ export class UserRepository {
           up."genresVector" <-> up1."genresVector",
           ABS(ud.age - ud1.age)
         LIMIT ${limit}::int`;
-    return users;
+    return await this.db.user.findMany({
+      where: {
+        id: {
+          in: users.map((user) => user.id),
+        }
+      },
+      include: {
+        userData: true,
+        userPreferences: {
+          include: {
+            genres: true
+          }
+        },
+      },
+    })
   }
 }

@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Res,
   UseGuards,
   ValidationPipe,
@@ -25,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { UserDto } from './dto/user-dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { GetUserDTO } from './dto/get-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -33,6 +35,7 @@ export class UserController {
     private readonly genreService: GenreService,
   ) {}
 
+  // TODO: add ability to get user by id
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -44,8 +47,16 @@ export class UserController {
     description: 'User with data and preferences',
     type: UserDto,
   })
-  async getUser(@AuthorizedUser() user: AuthorizedUserDTO) {
-    return await this.userService.getUser(user.id);
+  @ApiBadRequestResponse({
+    description: 'User with provided id is not found',
+  })
+  async getUser(
+    @Query(new ValidationPipe()) query: GetUserDTO,
+    @AuthorizedUser() user: AuthorizedUserDTO,
+    @Res() res: Response,
+  ) {
+    const result =  await this.userService.getUser(query.id ? +query.id : user.id);
+    if (!result) res.sendStatus(400);
   }
 
   @ApiOperation({

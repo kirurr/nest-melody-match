@@ -28,7 +28,7 @@ export class AuthController {
   @Get('google/redirect')
   @ApiOperation({
     summary: 'Redirect to Google for authorization',
-    description: 'Redirect to Google for authorization',
+    description: 'Redirect to Google for authorization and retireve tokens pair',
   })
   @UseGuards(AuthGuard('google'))
   @ApiOkResponse({
