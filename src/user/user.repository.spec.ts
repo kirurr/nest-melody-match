@@ -3,6 +3,11 @@ import { UserRepository } from './user.repository';
 import { PrismaService } from '../prisma.service';
 import { Prisma, User } from '@prisma/client';
 import { UserDto } from './dto/user-dto';
+import type {
+  FullUser,
+  CreateUserPreferences,
+  UpdateUserData,
+} from './user.types';
 
 describe('UserRepository', () => {
   let userRepository: UserRepository;
@@ -15,6 +20,13 @@ describe('UserRepository', () => {
     user: {
       findUnique: jest.fn(),
       create: jest.fn(),
+      findMany: jest.fn(),
+    },
+    userData: {
+      update: jest.fn(),
+    },
+    userPreferences: {
+      update: jest.fn(),
     },
   };
 
@@ -87,7 +99,11 @@ describe('UserRepository', () => {
         where: { id },
         include: {
           userData: true,
-          userPreferences: true,
+          userPreferences: {
+            include: {
+              genres: true,
+            },
+          },
         },
       });
     });
@@ -102,7 +118,11 @@ describe('UserRepository', () => {
         where: { id },
         include: {
           userData: true,
-          userPreferences: true,
+          userPreferences: {
+            include: {
+              genres: true,
+            },
+          },
         },
       });
     });
@@ -133,6 +153,26 @@ describe('UserRepository', () => {
     });
   });
 
+  describe('updateUserData', () => {
+    it('should successfully update userData', async () => {
+      const userData = {
+        userId: 1,
+        age: 54,
+        sex: 'MALE',
+        displayName: 'Glad Valakas',
+      } as UpdateUserData;
+      await userRepository.updateUserData(userData);
+      expect(mockPrismaService.userData.update).toHaveBeenCalledWith({
+        where: {
+          userId: userData.userId,
+        },
+        data: {
+          ...userData,
+        },
+      });
+    });
+  });
+
   describe('createUser', () => {
     it('should create and return a user', async () => {
       const userData = { email: 'test@example.com', name: 'Test User' };
@@ -149,13 +189,12 @@ describe('UserRepository', () => {
 
   describe('createUserPreferences', () => {
     it('should insert user preferences into the database', async () => {
-      const data = {
+      const data: CreateUserPreferences = {
         userId: 1,
+        genresIds: [1, 2, 3],
         genresVector: [1, 0, 0, 0, 0],
         desiredSex: 'MALE' as 'MALE' | 'FEMALE',
       };
-
-      mockPrismaService.$executeRaw.mockResolvedValue(undefined); // Предполагаем, что метод ничего не возвращает
 
       await userRepository.createUserPreferences(data);
 
@@ -165,19 +204,68 @@ describe('UserRepository', () => {
         data.genresVector,
         data.desiredSex,
       );
+
+      expect(mockPrismaService.userPreferences.update).toHaveBeenCalledWith({
+        where: {
+          userId: data.userId,
+        },
+        data: {
+          genres: {
+            connect: data.genresIds.map((id) => ({ id })),
+          },
+        },
+      });
     });
   });
   describe('findNearestUsersByUserId', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it('should return nearest users based on genres vector', async () => {
       const userId = 1;
       const limit = 5;
       const seen = [1, 2, 3];
-      const mockUsers: User[] = [
-        { id: 2, email: 'user2@example.com', name: 'User 2' } as User,
-        { id: 3, email: 'user3@example.com', name: 'User 3' } as User,
+      const mockQueryUsers: User[] = [
+        {
+          id: 2,
+          email: 'user2@example.com',
+          name: 'User 2',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 3,
+          email: 'user3@example.com',
+          name: 'User 3',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
 
-      mockPrismaService.$queryRaw.mockResolvedValue(mockUsers);
+      const mockResultUsers: FullUser[] = [
+        {
+          id: 2,
+          email: 'user2@example.com',
+          name: 'User 2',
+          userData: null,
+          userPreferences: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 3,
+          email: 'user3@example.com',
+          name: 'User 3',
+          userData: null,
+          userPreferences: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPrismaService.$queryRaw.mockResolvedValue(mockQueryUsers);
+      mockPrismaService.user.findMany.mockResolvedValue(mockResultUsers);
 
       const result = await userRepository.findNearestUsersByUserId({
         userId,
@@ -185,7 +273,7 @@ describe('UserRepository', () => {
         seen,
       });
 
-      expect(result).toEqual(mockUsers);
+      expect(result).toEqual(mockResultUsers);
       expect(mockPrismaService.$queryRaw).toHaveBeenCalledWith(
         expect.any(Array),
         userId,
@@ -194,6 +282,22 @@ describe('UserRepository', () => {
         Prisma.join(seen),
         limit,
       );
+
+      expect(mockPrismaService.user.findMany).toHaveBeenCalledWith({
+        where: {
+          id: {
+            in: mockQueryUsers.map((user) => user.id),
+          },
+        },
+        include: {
+          userData: true,
+          userPreferences: {
+            include: {
+              genres: true,
+            },
+          },
+        },
+      });
     });
 
     it('should return an empty array if no users are found', async () => {
@@ -218,6 +322,7 @@ describe('UserRepository', () => {
         Prisma.join(seen),
         limit,
       );
+      expect(mockPrismaService.user.findMany).not.toHaveBeenCalled();
     });
   });
 });

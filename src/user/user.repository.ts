@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Prisma, User, UserData } from '@prisma/client';
-import { CreateUserPreferences, FindNearestUsers } from './user.types';
+import {
+  CreateUserPreferences,
+  FindNearestUsers,
+  FullUser,
+  UpdateUserData,
+} from './user.types';
 import { UserDto } from './dto/user-dto';
 
 @Injectable()
@@ -15,8 +20,8 @@ export class UserRepository {
         userData: true,
         userPreferences: {
           include: {
-            genres: true
-          }
+            genres: true,
+          },
         },
       },
     });
@@ -68,11 +73,22 @@ export class UserRepository {
     });
   }
 
+  async updateUserData(data: UpdateUserData): Promise<void> {
+    await this.db.userData.update({
+      where: {
+        userId: data.userId,
+      },
+      data: {
+        ...data,
+      },
+    });
+  }
+
   async findNearestUsersByUserId({
     userId,
     limit,
     seen,
-  }: FindNearestUsers): Promise<User[]> {
+  }: FindNearestUsers): Promise<FullUser[]> {
     const users: User[] = await this.db.$queryRaw`
         SELECT u.*
         FROM "User" AS u
@@ -105,20 +121,25 @@ export class UserRepository {
           up."genresVector" <-> up1."genresVector",
           ABS(ud.age - ud1.age)
         LIMIT ${limit}::int`;
+
+    if (users.length === 0) {
+      return [];
+    }
+
     return await this.db.user.findMany({
       where: {
         id: {
           in: users.map((user) => user.id),
-        }
+        },
       },
       include: {
         userData: true,
         userPreferences: {
           include: {
-            genres: true
-          }
+            genres: true,
+          },
         },
       },
-    })
+    });
   }
 }

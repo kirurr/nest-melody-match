@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Query,
   Res,
@@ -27,6 +28,7 @@ import {
 import { UserDto } from './dto/user-dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GetUserDTO } from './dto/get-user.dto';
+import UpdateUserDataDTO from './dto/update-user-data.dto';
 
 @Controller('user')
 export class UserController {
@@ -35,7 +37,6 @@ export class UserController {
     private readonly genreService: GenreService,
   ) {}
 
-  // TODO: add ability to get user by id
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -55,8 +56,30 @@ export class UserController {
     @AuthorizedUser() user: AuthorizedUserDTO,
     @Res() res: Response,
   ) {
-    const result =  await this.userService.getUser(query.id ? +query.id : user.id);
+    const result = await this.userService.getUser(
+      query.id ? +query.id : user.id,
+    );
     if (!result) res.sendStatus(400);
+    res.send(result);
+  }
+
+  @Patch('data')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update user data',
+    description: 'Update user data for signed in user',
+  })
+  @ApiOkResponse({
+    description: 'UserData is updated successfully',
+  })
+  async updateUserData(
+    @Body(new ValidationPipe()) body: UpdateUserDataDTO,
+    @AuthorizedUser() user: AuthorizedUserDTO,
+    @Res() res: Response,
+  ) {
+    await this.userService.updateUserData({ ...body, userId: user.id });
+    res.sendStatus(200);
   }
 
   @ApiOperation({

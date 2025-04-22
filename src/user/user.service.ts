@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { Prisma, User, UserData } from '@prisma/client';
-import { CreateUserPreferences, FindNearestUsers } from './user.types';
+import { CreateUserPreferences, FindNearestUsers, UpdateUserData } from './user.types';
 import { UserDto } from './dto/user-dto';
 
 @Injectable()
@@ -34,5 +34,9 @@ export class UserService {
 
   async findNearestUsersByUserId(data: FindNearestUsers): Promise<User[]> {
     return await this.userRepository.findNearestUsersByUserId(data);
+  }
+
+  async updateUserData(data: UpdateUserData): Promise<void> {
+    return await this.userRepository.updateUserData(data);
   }
 }

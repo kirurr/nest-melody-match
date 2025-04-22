@@ -3,7 +3,7 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { Prisma, User } from '@prisma/client';
 import { UserDto } from './dto/user-dto';
-import { CreateUserPreferences } from './user.types';
+import { CreateUserPreferences, UpdateUserData } from './user.types';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -16,6 +16,7 @@ describe('UserService', () => {
     createUser: jest.fn(),
     createUserPreferences: jest.fn(),
     findNearestUsersByUserId: jest.fn(),
+    updateUserData: jest.fn(),
     getUser: jest.fn(),
   };
 
@@ -127,6 +128,24 @@ describe('UserService', () => {
     });
   });
 
+  describe('updateUserData', () => {
+    it('should call userRepository.updateUserData with correct data', async () => {
+      const data: UpdateUserData = {
+        userId: 1,
+        age: 54,
+        sex: 'MALE',
+        displayName: 'Glad Valakas',
+      };
+
+      mockUserRepository.updateUserData.mockResolvedValue(undefined);
+
+      await userService.updateUserData(data);
+
+      expect(mockUserRepository.updateUserData).toHaveBeenCalledWith(
+        data,
+      );
+    });
+  });
   describe('createUserPreferences', () => {
     it('should call userRepository.createUserPreferences with correct data', async () => {
       const data = {
