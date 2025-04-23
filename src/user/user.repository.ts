@@ -4,8 +4,8 @@ import { Prisma, User, UserData } from '@prisma/client';
 import {
   CreateUserPreferences,
   FindNearestUsers,
-  FullUser,
   UpdateUserData,
+  UpdateUserPreferences,
 } from './user.types';
 import { UserDto } from './dto/user-dto';
 
@@ -51,6 +51,47 @@ export class UserRepository {
     });
   }
 
+  private createUpdateUserPreferencesString(data: UpdateUserPreferences): Prisma.Sql {
+    const updates: Prisma.Sql[] = [];
+    for (const [k, v] of Object.entries(data)) {
+      switch (k) {
+        case 'desiredSex':
+          updates.push(Prisma.sql`"desiredSex" = ${v}::"PreferencesSex"`);
+          break;
+        case 'genresVector':
+          updates.push(Prisma.sql`"genresVector" = ${v}::vector`);
+          break;
+        case 'genresIds':
+          break;
+        case 'userId':
+          break;
+      }
+    }
+
+    return Prisma.join(updates);
+  }
+
+  async updateUserPreferences(data: UpdateUserPreferences): Promise<void> {
+    const updateString = this.createUpdateUserPreferencesString(data);
+
+    await this.db.$executeRaw`
+      UPDATE "UserPreferences" SET ${updateString} WHERE "userId" = ${data.userId}
+    `;
+
+    if (data.genresIds) {
+      await this.db.userPreferences.update({
+        where: {
+          userId: data.userId,
+        },
+        data: {
+          genres: {
+            set: data.genresIds.map((id) => ({ id })),
+          },
+        },
+      });
+    }
+  }
+
   async createUserPreferences(data: CreateUserPreferences): Promise<void> {
     await this.db.$executeRaw`
       INSERT INTO "UserPreferences" ("userId", "genresVector", "desiredSex")
@@ -67,7 +108,7 @@ export class UserRepository {
       },
       data: {
         genres: {
-          connect: data.genresIds.map((id) => ({ id })),
+          set: data.genresIds.map((id) => ({ id })),
         },
       },
     });
@@ -88,7 +129,7 @@ export class UserRepository {
     userId,
     limit,
     seen,
-  }: FindNearestUsers): Promise<FullUser[]> {
+  }: FindNearestUsers): Promise<UserDto[]> {
     const users: User[] = await this.db.$queryRaw`
         SELECT u.*
         FROM "User" AS u

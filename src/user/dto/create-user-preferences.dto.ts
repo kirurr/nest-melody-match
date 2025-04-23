@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PreferencesSex } from '@prisma/client';
 import {
-  ArrayNotEmpty,
   IsArray,
   IsEnum,
   IsNotEmpty,
@@ -10,7 +9,7 @@ import {
 
 export class CreateUserPreferencesDTO {
   @IsArray()
-  @ArrayNotEmpty()
+  @IsNotEmpty()
   @ApiProperty({
     description: 'List of ids of genres',
     type: [Number],

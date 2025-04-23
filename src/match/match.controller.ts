@@ -24,7 +24,7 @@ import CreateMatchDTO from './dto/create-match.dto';
 import { MatchService } from './match.service';
 import MatchDTO from './dto/match.dto';
 import AcceptMatchDTO from './dto/accept-match.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('match')
 export class MatchController {

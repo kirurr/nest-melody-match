@@ -4,9 +4,9 @@ import { PrismaService } from '../prisma.service';
 import { Prisma, User } from '@prisma/client';
 import { UserDto } from './dto/user-dto';
 import type {
-  FullUser,
   CreateUserPreferences,
   UpdateUserData,
+  UpdateUserPreferences,
 } from './user.types';
 
 describe('UserRepository', () => {
@@ -187,6 +187,48 @@ describe('UserRepository', () => {
     });
   });
 
+  describe('updateUserPreferences', () => {
+    it('should update user preferences', async () => {
+      const data: UpdateUserPreferences = {
+        userId: 1,
+        genresIds: [1, 2, 3],
+        genresVector: [1, 0, 0, 0, 0],
+        desiredSex: 'MALE',
+      };
+      const updateString = Prisma.join([
+        Prisma.sql`data = ${'data'}::data`,
+        Prisma.sql`vector = ${[1, 2, 3]}::vector`,
+      ]);
+
+      const mockCreateUpdateUserPreferencesString = jest.spyOn(
+        userRepository as any,
+        'createUpdateUserPreferencesString',
+      );
+      mockCreateUpdateUserPreferencesString.mockReturnValue(updateString);
+
+      await userRepository.updateUserPreferences(data);
+
+      expect(mockCreateUpdateUserPreferencesString).toHaveBeenCalledWith(data);
+
+      expect(mockPrismaService.$executeRaw).toHaveBeenCalledWith(
+        expect.any(Array),
+        updateString,
+        data.userId,
+      );
+
+      expect(mockPrismaService.userPreferences.update).toHaveBeenCalledWith({
+        where: {
+          userId: data.userId,
+        },
+        data: {
+          genres: {
+            set: data.genresIds!.map((id) => ({ id })),
+          },
+        },
+      });
+    });
+  });
+
   describe('createUserPreferences', () => {
     it('should insert user preferences into the database', async () => {
       const data: CreateUserPreferences = {
@@ -211,12 +253,13 @@ describe('UserRepository', () => {
         },
         data: {
           genres: {
-            connect: data.genresIds.map((id) => ({ id })),
+            set: data.genresIds.map((id) => ({ id })),
           },
         },
       });
     });
   });
+
   describe('findNearestUsersByUserId', () => {
     beforeEach(() => {
       jest.clearAllMocks();
@@ -243,7 +286,7 @@ describe('UserRepository', () => {
         },
       ];
 
-      const mockResultUsers: FullUser[] = [
+      const mockResultUsers: UserDto[] = [
         {
           id: 2,
           email: 'user2@example.com',

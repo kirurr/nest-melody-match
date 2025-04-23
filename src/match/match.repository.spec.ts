@@ -100,7 +100,14 @@ describe('MatchRepository', () => {
       expect(result).toEqual(mockMatches);
       expect(mockPrismaService.match.findMany).toHaveBeenCalledWith({
         where: {
-          userId: userId,
+          OR: [
+            {
+              userId: userId,
+            },
+            {
+              likedUserId: userId,
+            },
+          ],
           isAccepted: true,
         },
       });
@@ -116,7 +123,14 @@ describe('MatchRepository', () => {
       expect(result).toEqual([]);
       expect(mockPrismaService.match.findMany).toHaveBeenCalledWith({
         where: {
-          userId: userId,
+          OR: [
+            {
+              userId: userId,
+            },
+            {
+              likedUserId: userId,
+            },
+          ],
           isAccepted: true,
         },
       });

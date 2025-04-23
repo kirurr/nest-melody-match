@@ -26,9 +26,10 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { UserDto } from './dto/user-dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUserDTO } from './dto/get-user.dto';
 import UpdateUserDataDTO from './dto/update-user-data.dto';
+import UpdateUserPreferencesDTO from './dto/update-user-preferences.dto';
 
 @Controller('user')
 export class UserController {
@@ -116,6 +117,38 @@ export class UserController {
     }
 
     res.sendStatus(201);
+  }
+
+  @Patch('preferences')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update user preferences',
+    description: 'Update user preferences for signed in user',
+  })
+  @ApiOkResponse({
+    description: 'UserPreferences is updated successfully',
+  })
+  async updateUserPreferences(
+    @Body(new ValidationPipe()) body: UpdateUserPreferencesDTO,
+    @AuthorizedUser() user: AuthorizedUserDTO,
+    @Res() res: Response,
+  ) {
+
+    let userVector: number[] | undefined;
+    if (body.genresIds) {
+      userVector = await this.genreService.calculateUserGenreVector(
+        body.genresIds,
+      );
+    }
+
+    await this.userService.updateUserPreferences({
+      ...body,
+      userId: user.id,
+      genresVector: userVector,
+    });
+
+    res.sendStatus(200);
   }
 
   @ApiOperation({

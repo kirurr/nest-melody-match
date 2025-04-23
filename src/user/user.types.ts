@@ -1,4 +1,4 @@
-import { Genre, User, UserData, UserPreferences } from '@prisma/client';
+import { UserData, UserPreferences } from '@prisma/client';
 
 export type FindNearestUsers = {
   userId: number;
@@ -6,18 +6,11 @@ export type FindNearestUsers = {
   seen: number[];
 };
 
+export type UpdateUserPreferences = Partial<Omit<CreateUserPreferences, 'userId'>> & {userId: number}
+
 export type CreateUserPreferences = Omit<UserPreferences, 'id'> & {
   genresVector: number[];
   genresIds: number[];
 };
 
 export type UpdateUserData = Partial<Omit<UserData, 'id'>>;
-
-type PreferencesWithGenres = UserPreferences & {
-  genres: Genre[] | null;
-};
-
-export type FullUser = User & {
-  userData: UserData | null;
-  userPreferences: PreferencesWithGenres | null;
-};
