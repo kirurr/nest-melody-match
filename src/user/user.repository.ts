@@ -13,6 +13,26 @@ import { UserDto } from './dto/user-dto';
 export class UserRepository {
   constructor(private readonly db: PrismaService) {}
 
+  async deleteUser(id: number): Promise<void> {
+    await this.db.$transaction([
+      this.db.user.delete({
+        where: { id },
+      }),
+      this.db.userData.delete({
+        where: { userId: id },
+      }),
+      this.db.userPreferences.delete({
+        where: { userId: id },
+      }),
+      this.db.activeRefreshToken.delete({
+        where: { userId: id },
+      }),
+      this.db.match.deleteMany({
+        where: { OR: [{ likedUserId: id }, { userId: id }] },
+      }),
+    ]);
+  }
+
   async getUser(id: number): Promise<UserDto | null> {
     return await this.db.user.findUnique({
       where: { id },
@@ -51,7 +71,9 @@ export class UserRepository {
     });
   }
 
-  private createUpdateUserPreferencesString(data: UpdateUserPreferences): Prisma.Sql {
+  private createUpdateUserPreferencesString(
+    data: UpdateUserPreferences,
+  ): Prisma.Sql {
     const updates: Prisma.Sql[] = [];
     for (const [k, v] of Object.entries(data)) {
       switch (k) {

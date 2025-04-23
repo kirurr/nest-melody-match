@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Patch,
   Post,
@@ -37,6 +38,24 @@ export class UserController {
     private readonly userService: UserService,
     private readonly genreService: GenreService,
   ) {}
+
+  @Delete()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete user',
+    description: 'Delete authorized user, userData and userPreferences',
+  })
+  @ApiOkResponse({
+    description: 'User is deleted',
+  })
+  async deleteUser(
+    @AuthorizedUser() user: AuthorizedUserDTO,
+    @Res() res: Response,
+  ) {
+    await this.userService.deleteUser(user.id);
+    res.sendStatus(200);
+  }
 
   @Get()
   @UseGuards(JwtAuthGuard)
@@ -134,7 +153,6 @@ export class UserController {
     @AuthorizedUser() user: AuthorizedUserDTO,
     @Res() res: Response,
   ) {
-
     let userVector: number[] | undefined;
     if (body.genresIds) {
       userVector = await this.genreService.calculateUserGenreVector(

@@ -22,6 +22,7 @@ describe('UserService', () => {
     findNearestUsersByUserId: jest.fn(),
     updateUserData: jest.fn(),
     getUser: jest.fn(),
+    deleteUser: jest.fn(),
     updateUserPreferences: jest.fn(),
   };
 
@@ -147,6 +148,16 @@ describe('UserService', () => {
       await userService.updateUserData(data);
 
       expect(mockUserRepository.updateUserData).toHaveBeenCalledWith(data);
+    });
+  });
+  describe('deleteUser', () => {
+    it('should call userRepository.deleteUser with correct data', async () => {
+      const userId = 1;
+
+      const result = await userService.deleteUser(userId);
+
+      expect(result).toBeUndefined();
+      expect(mockUserRepository.deleteUser).toHaveBeenCalledWith(userId);
     });
   });
   describe('updateUserPreferences', () => {

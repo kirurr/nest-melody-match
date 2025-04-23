@@ -17,16 +17,26 @@ describe('UserRepository', () => {
   const mockPrismaService = {
     $executeRaw: jest.fn(),
     $queryRaw: jest.fn(),
+    $transaction: jest.fn(),
     user: {
       findUnique: jest.fn(),
       create: jest.fn(),
       findMany: jest.fn(),
+      delete: jest.fn(),
+    },
+    activeRefreshToken: {
+      delete: jest.fn(),
+    },
+    match: {
+      deleteMany: jest.fn(),
     },
     userData: {
       update: jest.fn(),
+      delete: jest.fn(),
     },
     userPreferences: {
       update: jest.fn(),
+      delete: jest.fn(),
     },
   };
 
@@ -74,6 +84,36 @@ describe('UserRepository', () => {
       expect(result).toBeNull();
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
+      });
+    });
+  });
+
+  describe('deleteUser', () => {
+    it('should delete user, userData, userPreferences, activeRefreshToken and all matches with this user', async () => {
+      const userId = 1;
+
+      await userRepository.deleteUser(userId);
+      expect(mockPrismaService.$transaction).toHaveBeenCalled();
+    });
+
+    it('should call all delete methods with correct parameters', async () => {
+      const userId = 1;
+      await userRepository.deleteUser(userId);
+
+      expect(mockPrismaService.user.delete).toHaveBeenCalledWith({
+        where: { id: userId },
+      });
+      expect(mockPrismaService.userData.delete).toHaveBeenCalledWith({
+        where: { userId: userId },
+      });
+      expect(mockPrismaService.userPreferences.delete).toHaveBeenCalledWith({
+        where: { userId: userId },
+      });
+      expect(mockPrismaService.activeRefreshToken.delete).toHaveBeenCalledWith({
+        where: { userId: userId },
+      });
+      expect(mockPrismaService.match.deleteMany).toHaveBeenCalledWith({
+        where: { OR: [{ likedUserId: userId }, { userId: userId }] },
       });
     });
   });

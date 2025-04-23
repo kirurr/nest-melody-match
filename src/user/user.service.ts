@@ -8,6 +8,10 @@ import { UserDto } from './dto/user-dto';
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
+  async deleteUser(id: number): Promise<void> {
+    return await this.userRepository.deleteUser(id);
+  }
+
   async getUser(id: number): Promise<UserDto | null> {
     return await this.userRepository.getUser(id);
   }
