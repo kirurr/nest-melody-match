@@ -2,7 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenService } from '../refresh-token/refresh-token.service';
 import { UserService } from '../user/user.service';
-import { GoogleUser } from './auth.types';
+import { GoogleUser, SpotifyUser } from './auth.types';
+import { SpotifyService } from 'src/spotify/spotify.service';
+import { User } from '@prisma/client';
+
+type HandleAuthReturnType = {
+  accessToken: string;
+  refreshToken: string;
+  isNewUser: boolean;
+  user: User;
+};
 
 @Injectable()
 export class AuthService {
@@ -10,6 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly userService: UserService,
+    private readonly spotifyService: SpotifyService,
   ) {}
 
   async hanleRefreshToken(
@@ -44,11 +54,34 @@ export class AuthService {
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 
-  async handleOAuth(reqUser: GoogleUser): Promise<{
-    accessToken: string;
-    refreshToken: string;
-    isNewUser: boolean;
-  }> {
+  async handleGoogleOAuth(reqUser: GoogleUser): Promise<HandleAuthReturnType> {
+    return this.handleOAuth(reqUser);
+  }
+
+  async handleSpotifyOAuth(
+    reqUser: SpotifyUser,
+  ): Promise<HandleAuthReturnType> {
+    const authResult = await this.handleOAuth(reqUser);
+
+    if (authResult.isNewUser) {
+      await this.spotifyService.encryptRefreshTokenAndSaveToDB(
+        reqUser.tokens.refreshToken,
+        authResult.user.id,
+      );
+    } else {
+      await this.spotifyService.updateByUserId(
+        authResult.user.id,
+        reqUser.tokens.refreshToken,
+      );
+    }
+
+    return authResult;
+  }
+
+  async handleOAuth(reqUser: {
+    email: string;
+    name: string;
+  }): Promise<HandleAuthReturnType> {
     let isNewUser = false;
     let user = await this.userService.findUserByEmail(reqUser.email);
     let refreshToken: string | null;
@@ -88,6 +121,6 @@ export class AuthService {
       { id: user.id.toString() },
       { expiresIn: '1h' },
     );
-    return { accessToken, refreshToken, isNewUser };
+    return { accessToken, refreshToken, isNewUser, user };
   }
 }

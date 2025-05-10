@@ -19,6 +19,8 @@ services:
           action: rebuild
         - path: ./prisma
           action: rebuild
+        - path: .env
+          action: rebuild
   db:
     image: pgvector/pgvector:pg17
     restart: always

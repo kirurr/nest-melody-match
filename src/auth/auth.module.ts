@@ -8,6 +8,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthService } from './auth.service';
 import { RefreshTokenModule } from 'src/refresh-token/refresh-token.module';
 import { UserModule } from 'src/user/user.module';
+import { SpotifyStrategy } from './strategies/spotify.strategy';
+import { SpotifyModule } from 'src/spotify/spotify.module';
 
 @Module({
   imports: [
@@ -20,9 +22,10 @@ import { UserModule } from 'src/user/user.module';
       inject: [ConfigService],
     }),
     RefreshTokenModule,
+    SpotifyModule,
     UserModule
   ],
   controllers: [AuthController],
-  providers: [GoogleStrategy, JwtStrategy, AuthService],
+  providers: [GoogleStrategy, JwtStrategy, AuthService, SpotifyStrategy],
 })
 export class AuthModule {}
