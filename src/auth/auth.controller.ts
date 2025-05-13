@@ -20,23 +20,35 @@ import {
 } from '@nestjs/swagger';
 import { TokensPairDTO } from './dto/tokens-pair.dto';
 import { RefreshTokenDTO } from './dto/refresh-token.dto';
+import { SpotifyTokenPairDTO } from './dto/spotify-token-pair.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Get('spotify/redirect')
   @UseGuards(AuthGuard('spotify'))
+  @ApiOperation({
+    summary: 'Redirect to Spotify for authorization',
+    description:
+      'Redirect to Spotify for authorization and retireve tokens pair',
+  })
+  @ApiOkResponse({
+    description: 'User is authorized, returns access and refresh tokens',
+    type: SpotifyTokenPairDTO,
+  })
+  @ApiCreatedResponse({
+    description: 'New User is created, returns access and refresh tokens',
+    type: SpotifyTokenPairDTO,
+  })
   async spotifyAuthRedirect(
     @Req() req: Request & { user: SpotifyUser },
     @Res() res: Response,
   ) {
-    const {
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      isNewUser,
-    } = await this.authService.handleSpotifyOAuth(req.user);
-    if (isNewUser) res.send({ access_token, refresh_token });
-    else res.status(201).send({ access_token, refresh_token });
+    const { accessToken, refreshToken, spotifyAccessToken, isNewUser } =
+      await this.authService.handleSpotifyOAuth(req.user);
+    if (isNewUser) res.send({ accessToken, refreshToken, spotifyAccessToken });
+    else
+      res.status(201).send({ accessToken, refreshToken, spotifyAccessToken });
   }
 
   @Get('google/redirect')

@@ -1,17 +1,140 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { SpotifyRepository } from './spotify.repository';
 import { CryptoService } from '../refresh-token/crypto-service';
+import { ConfigService } from '@nestjs/config';
+import {
+  SpotifyRefreshTokenResponse,
+  SpotifyUserTopArtistsResponse,
+} from './spotify.types';
+import { checkSpotifyRefreshTokenJSON } from './spotify.utils';
 
 @Injectable()
 export class SpotifyService {
   constructor(
     private readonly repository: SpotifyRepository,
     private readonly cryptoService: CryptoService,
+    private readonly configService: ConfigService,
   ) {}
 
-  // async getSpotifyGenresByUser(user: User): Promise<string[]> {
+  private async tryFetchSpotifyUserTopArtists(
+    access_token: string,
+    limit: number = 10,
+  ): Promise<Response | null> {
+    const payload: RequestInit = {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    };
 
-  // };
+    const url = `https://api.spotify.com/v1/me/top/artists?&limit=${limit}`;
+
+    const response = await fetch(url, payload).catch(() => {
+      throw new InternalServerErrorException(
+        'Something went wrong when trying to access Spotify, try to sign in again',
+      );
+    });
+    if (response.status === 401) {
+      return null;
+    }
+    return response;
+  }
+
+	async asignSpotifyGenresToUser(userId: number, access_token: string) {
+		const genres = await this.getSpotifyGenresByUserId(userId, access_token);
+		//TODO: update user genre vector
+
+	}
+
+  private async getSpotifyGenresByUserId(
+    userId: number,
+    access_token: string,
+    limit: number = 10,
+  ): Promise<string[]> {
+    let response = await this.tryFetchSpotifyUserTopArtists(
+      access_token,
+      limit,
+    );
+    if (!response) {
+      const refreshToken = await this.getDecryptedRefreshTokenByUserId(userId);
+      if (!refreshToken)
+        throw new UnauthorizedException(
+          'Your token is invalid, try to sign in with spotify again',
+        );
+      const newAccessToken = await this.getNewSpotifyAccessToken(
+        userId,
+        refreshToken,
+      );
+
+      response = await this.tryFetchSpotifyUserTopArtists(
+        newAccessToken,
+        limit,
+      );
+
+      if (!response)
+        throw new InternalServerErrorException(
+          'Something went wrong when trying to access Spotify, try to sign in again',
+        );
+    }
+
+    const json = (await response.json()) as SpotifyUserTopArtistsResponse;
+    let genres: string[] = [];
+    json.items.map((item) => (genres = [...genres, ...item.genres]));
+    return genres;
+  }
+
+  private async getNewSpotifyAccessToken(
+    userId: number,
+    refreshToken: string,
+  ): Promise<string> {
+    const authBase64 = Buffer.from(
+      `${this.configService.get('SPOTIFY_CLIENT_ID')}:${this.configService.get(
+        'SPOTIFY_CLIENT_SECRET',
+      )}`,
+    ).toString('base64');
+
+    const payload: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${authBase64}`,
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refreshToken,
+      }),
+    };
+    const url = 'https://accounts.spotify.com/api/token';
+
+    const response = await fetch(url, payload).catch(() => {
+      throw new InternalServerErrorException(
+        'Something went wrong when trying to access Spotify, try to sign in again',
+      );
+    });
+    if (response.status !== 200) {
+      await this.deleteRefreshTokenByUserId(userId);
+      throw new UnauthorizedException(
+        'Something went wrong when trying to access Spotify, try to sign in again',
+      );
+    }
+    const json = (await response.json()) as SpotifyRefreshTokenResponse;
+    if (!checkSpotifyRefreshTokenJSON(json))
+      throw new InternalServerErrorException(
+        'Something went wrong when trying to access Spotify, try to sign in again',
+      );
+
+    await this.updateByUserId(userId, json.refresh_token);
+
+    return json.access_token;
+  }
+
+  private async deleteRefreshTokenByUserId(userId: number): Promise<void> {
+    await this.repository.deleteByUserId(userId);
+  }
 
   async encryptRefreshTokenAndSaveToDB(
     refreshToken: string,
@@ -44,18 +167,14 @@ export class SpotifyService {
     const encryptedRefreshToken =
       await this.cryptoService.encryptRefreshToken(token);
 
-    await this.repository.updateByUserId(
-      userId,
-      encryptedRefreshToken,
-    );
+    await this.repository.updateByUserId(userId, encryptedRefreshToken);
   }
 
   async checkRefreshToken(
     refreshToken: string,
     userId: number,
   ): Promise<boolean> {
-    const refreshTokenFromDB =
-      await this.repository.findByUserId(userId);
+    const refreshTokenFromDB = await this.repository.findByUserId(userId);
 
     if (!refreshTokenFromDB) {
       return false;

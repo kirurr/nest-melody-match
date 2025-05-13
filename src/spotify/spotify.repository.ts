@@ -1,13 +1,21 @@
-import { Injectable } from "@nestjs/common";
-import { SpotifyActiveRefreshToken } from "@prisma/client";
-import { PrismaService } from "src/prisma.service";
+import { Injectable } from '@nestjs/common';
+import { SpotifyActiveRefreshToken } from '@prisma/client';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class SpotifyRepository {
-	constructor(private readonly db: PrismaService) {}
+  constructor(private readonly db: PrismaService) {}
   async find(refreshToken: string): Promise<SpotifyActiveRefreshToken | null> {
     return await this.db.spotifyActiveRefreshToken.findUnique({
       where: { refreshToken },
+    });
+  }
+
+  async deleteByUserId(userId: number): Promise<void> {
+    await this.db.spotifyActiveRefreshToken.delete({
+      where: {
+        userId: userId,
+      },
     });
   }
 
@@ -23,7 +31,9 @@ export class SpotifyRepository {
     });
   }
 
-  async findByUserId(userId: number): Promise<SpotifyActiveRefreshToken | null> {
+  async findByUserId(
+    userId: number,
+  ): Promise<SpotifyActiveRefreshToken | null> {
     return await this.db.spotifyActiveRefreshToken.findUnique({
       where: { userId: userId },
     });

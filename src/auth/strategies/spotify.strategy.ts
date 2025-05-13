@@ -10,7 +10,7 @@ export class SpotifyStrategy extends PassportStrategy(Strategy, 'spotify') {
 			clientID: configService.get<string>('SPOTIFY_CLIENT_ID')!,
 			clientSecret: configService.get<string>('SPOTIFY_CLIENT_SECRET')!,
 			callbackURL: configService.get<string>('SPOTIFY_REDIRECT_URI')!,
-			scope: ['user-read-email', 'user-read-private'],
+			scope: ['user-read-email', 'user-read-private', 'user-top-read'],
 		})
 	}
 
