@@ -6,8 +6,7 @@ export function checkSpotifyRefreshTokenJSON(
   if (
     typeof data === 'object' &&
     data !== null &&
-    typeof data.access_token === 'string' &&
-    typeof data.refresh_token === 'string'
+    typeof data.access_token === 'string'
   ) {
     return true;
   }

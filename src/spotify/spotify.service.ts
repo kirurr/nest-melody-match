@@ -11,6 +11,8 @@ import {
   SpotifyUserTopArtistsResponse,
 } from './spotify.types';
 import { checkSpotifyRefreshTokenJSON } from './spotify.utils';
+import { GenreService } from 'src/genre/genre.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class SpotifyService {
@@ -18,6 +20,8 @@ export class SpotifyService {
     private readonly repository: SpotifyRepository,
     private readonly cryptoService: CryptoService,
     private readonly configService: ConfigService,
+    private readonly genreService: GenreService,
+    private readonly userService: UserService,
   ) {}
 
   private async tryFetchSpotifyUserTopArtists(
@@ -44,11 +48,31 @@ export class SpotifyService {
     return response;
   }
 
-	async asignSpotifyGenresToUser(userId: number, access_token: string) {
-		const genres = await this.getSpotifyGenresByUserId(userId, access_token);
-		//TODO: update user genre vector
+  async asignSpotifyGenresToUser(userId: number, access_token?: string) {
+		if (!access_token) {
+			const refreshToken = await this.getDecryptedRefreshTokenByUserId(userId);
+			if (!refreshToken)
+				throw new UnauthorizedException(
+					'Refresh token is invalid',
+				);
+			access_token = await this.getNewSpotifyAccessToken(userId, refreshToken)
+		}
 
-	}
+    const genresNames = await this.getSpotifyGenresByUserId(
+      userId,
+      access_token,
+    );
+    const genres = await this.genreService.findGenresByNames(genresNames);
+    const vector = await this.genreService.calculateUserGenreVector(
+      genres.map((genre) => genre.id),
+    );
+
+    await this.userService.updateUserPreferences({
+      userId,
+      genresIds: genres.map((genre) => genre.id),
+      genresVector: vector,
+    });
+  }
 
   private async getSpotifyGenresByUserId(
     userId: number,
@@ -63,7 +87,7 @@ export class SpotifyService {
       const refreshToken = await this.getDecryptedRefreshTokenByUserId(userId);
       if (!refreshToken)
         throw new UnauthorizedException(
-          'Your token is invalid, try to sign in with spotify again',
+          'Refresh token is invalid',
         );
       const newAccessToken = await this.getNewSpotifyAccessToken(
         userId,
@@ -77,7 +101,7 @@ export class SpotifyService {
 
       if (!response)
         throw new InternalServerErrorException(
-          'Something went wrong when trying to access Spotify, try to sign in again',
+          'Something went wrong when trying to access Spotify',
         );
     }
 
@@ -105,27 +129,30 @@ export class SpotifyService {
       },
       body: new URLSearchParams({
         grant_type: 'refresh_token',
-        refreshToken,
+        refresh_token: refreshToken,
       }),
     };
     const url = 'https://accounts.spotify.com/api/token';
 
     const response = await fetch(url, payload).catch(() => {
       throw new InternalServerErrorException(
-        'Something went wrong when trying to access Spotify, try to sign in again',
+        'Something went wrong when trying to get new Spotify access token',
       );
     });
     if (response.status !== 200) {
       await this.deleteRefreshTokenByUserId(userId);
       throw new UnauthorizedException(
-        'Something went wrong when trying to access Spotify, try to sign in again',
+        'Recieved invalid response code from Spotify',
       );
     }
     const json = (await response.json()) as SpotifyRefreshTokenResponse;
+		console.log(json)
     if (!checkSpotifyRefreshTokenJSON(json))
       throw new InternalServerErrorException(
-        'Something went wrong when trying to access Spotify, try to sign in again',
+        'Recieved invalid response body from Spotify',
       );
+
+		if (!json.refresh_token) json.refresh_token = refreshToken;
 
     await this.updateByUserId(userId, json.refresh_token);
 

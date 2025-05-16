@@ -9,13 +9,14 @@ export class GenreRepository {
   constructor(private readonly db: PrismaService) {}
 
 	async findGenresByNames(genresNames: string[]): Promise<PrismaGenre[]> {
-		//TODO: complete this
-		//next to step is to update user genre vector
 		return await this.db.genre.findMany({
 			where: {
-				name: {
-					in: genresNames,
-				}
+				OR: genresNames.map((name) => ({
+					name: {
+						contains: name,
+						mode: 'insensitive',
+					},
+				})),
 			}
 		})
 	}
