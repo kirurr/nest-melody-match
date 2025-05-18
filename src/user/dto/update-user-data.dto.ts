@@ -35,4 +35,13 @@ export default class UpdateUserDataDTO extends PartialType(
 		example: 'Glad Valakas'
   })
   displayName: string;
+
+  @IsString()
+  @IsOptional()
+	@IsNotEmpty()
+  @ApiProperty({
+    required: false,
+		example: 'Some about text'
+  })
+  about: string;
 }

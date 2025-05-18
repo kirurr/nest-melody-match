@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Prisma, Sex } from "@prisma/client";
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateUserDataDTO implements Omit<Prisma.UserDataCreateInput, 'user'> {
 	@IsNumber()
@@ -23,4 +23,12 @@ export class CreateUserDataDTO implements Omit<Prisma.UserDataCreateInput, 'user
 	@IsString()
 	@IsNotEmpty()
 	displayName: string
+
+	@ApiProperty({
+		example: 'Some about text',
+		required: false
+	})
+	@IsString()
+	@IsOptional()
+	about: string
 }

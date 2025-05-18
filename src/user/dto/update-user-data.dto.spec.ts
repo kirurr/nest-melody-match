@@ -13,7 +13,8 @@ describe('UpdateUserDataDTO', () => {
 		const correctUserData: UpdateUserDataDTO = {
 			age: 54,
 			sex: 'MALE',
-			displayName: 'Glad Valakas'
+			displayName: 'Glad Valakas',
+			about: 'Some about text',
 		}
 
 		expect(

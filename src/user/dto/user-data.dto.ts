@@ -14,4 +14,6 @@ export default class UserDataDTO implements UserData {
   sex: $Enums.Sex;
   @ApiProperty()
   displayName: string;
+  @ApiProperty()
+  about: string;
 }

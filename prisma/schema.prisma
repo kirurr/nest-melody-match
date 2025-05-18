@@ -57,6 +57,7 @@ model UserData {
     age         Int
     sex         Sex
     displayName String
+    about       String @default("")
 }
 
 model UserPreferences {
