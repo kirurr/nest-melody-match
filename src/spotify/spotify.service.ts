@@ -11,8 +11,8 @@ import {
   SpotifyUserTopArtistsResponse,
 } from './spotify.types';
 import { checkSpotifyRefreshTokenJSON } from './spotify.utils';
-import { GenreService } from 'src/genre/genre.service';
-import { UserService } from 'src/user/user.service';
+import { GenreService } from '../genre/genre.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class SpotifyService {
@@ -24,7 +24,7 @@ export class SpotifyService {
     private readonly userService: UserService,
   ) {}
 
-  private async tryFetchSpotifyUserTopArtists(
+  async tryFetchSpotifyUserTopArtists(
     access_token: string,
     limit: number = 10,
   ): Promise<Response | null> {
@@ -74,7 +74,7 @@ export class SpotifyService {
     });
   }
 
-  private async getSpotifyGenresByUserId(
+  async getSpotifyGenresByUserId(
     userId: number,
     access_token: string,
     limit: number = 10,
@@ -111,7 +111,7 @@ export class SpotifyService {
     return genres;
   }
 
-  private async getNewSpotifyAccessToken(
+  async getNewSpotifyAccessToken(
     userId: number,
     refreshToken: string,
   ): Promise<string> {
@@ -146,7 +146,6 @@ export class SpotifyService {
       );
     }
     const json = (await response.json()) as SpotifyRefreshTokenResponse;
-		console.log(json)
     if (!checkSpotifyRefreshTokenJSON(json))
       throw new InternalServerErrorException(
         'Recieved invalid response body from Spotify',
@@ -159,7 +158,7 @@ export class SpotifyService {
     return json.access_token;
   }
 
-  private async deleteRefreshTokenByUserId(userId: number): Promise<void> {
+  async deleteRefreshTokenByUserId(userId: number): Promise<void> {
     await this.repository.deleteByUserId(userId);
   }
 
