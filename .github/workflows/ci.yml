@@ -44,6 +44,10 @@ jobs:
         echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
         echo REFRESH_SECRET=${{ secrets.REFRESH_SECRET }} >> .env
 
+        echo SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }} >> .env
+        echo SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }} >> .env
+        echo SPOTIFY_REDIRECT_URI=${{ secrets.SPOTIFY_REDIRECT_URI }} >> .env
+
     - name: Install dependencies
       run: npm install -g pnpm && pnpm install
 
