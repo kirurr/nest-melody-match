@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenService } from '../refresh-token/refresh-token.service';
 import { UserService } from '../user/user.service';
 import { GoogleUser, SpotifyUser } from './auth.types';
-import { SpotifyService } from 'src/spotify/spotify.service';
+import { SpotifyService } from '../spotify/spotify.service';
 import { User } from '@prisma/client';
 
 type HandleAuthReturnType = {
