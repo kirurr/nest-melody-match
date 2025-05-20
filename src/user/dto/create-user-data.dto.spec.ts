@@ -15,6 +15,7 @@ describe('CreateUserDataDTO', () => {
 			sex: 'MALE',
 			displayName: 'correct name',
 			about: 'correct about',
+			imageUrl: 'correct image url',
 		}
 
 		expect(

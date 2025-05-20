@@ -31,4 +31,12 @@ export class CreateUserDataDTO implements Omit<Prisma.UserDataCreateInput, 'user
 	@IsString()
 	@IsOptional()
 	about: string
+
+	@ApiProperty({
+		example: 'http://some.image.url',
+		required: false
+	})
+	@IsString()
+	@IsOptional()
+	imageUrl: string
 }

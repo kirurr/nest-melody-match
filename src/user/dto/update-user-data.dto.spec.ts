@@ -15,6 +15,7 @@ describe('UpdateUserDataDTO', () => {
 			sex: 'MALE',
 			displayName: 'Glad Valakas',
 			about: 'Some about text',
+			imageUrl: 'http://some.image.url',
 		}
 
 		expect(

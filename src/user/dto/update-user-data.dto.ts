@@ -44,4 +44,13 @@ export default class UpdateUserDataDTO extends PartialType(
 		example: 'Some about text'
   })
   about: string;
+
+  @IsString()
+  @IsOptional()
+	@IsNotEmpty()
+  @ApiProperty({
+    required: false,
+		example: 'http://some.image.url'
+  })
+  imageUrl: string;
 }

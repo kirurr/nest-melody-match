@@ -16,4 +16,6 @@ export default class UserDataDTO implements UserData {
   displayName: string;
   @ApiProperty()
   about: string;
+  @ApiProperty()
+  imageUrl: string;
 }

@@ -58,6 +58,7 @@ model UserData {
     sex         Sex
     displayName String
     about       String @default("")
+    imageUrl    String @default("")
 }
 
 model UserPreferences {
