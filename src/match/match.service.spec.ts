@@ -3,6 +3,7 @@ import { MatchService } from './match.service';
 import { MatchRepository } from './match.repository';
 import { Match } from '@prisma/client';
 import { AcceptMatch, CreateMatch } from './match.types';
+import { BadRequestException } from '@nestjs/common';
 
 describe('MatchService', () => {
   let matchService: MatchService;
@@ -13,6 +14,7 @@ describe('MatchService', () => {
     createMatch: jest.fn(),
     getAcceptedMatches: jest.fn(),
     acceptMatch: jest.fn(),
+    findMatchById: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -35,15 +37,34 @@ describe('MatchService', () => {
   });
 
   describe('accept match', () => {
-    it('should call matchRepository.accpetMatch with correct data', async () => {
+    it('should find match and call matchRepository.accpetMatch with correct data', async () => {
+      const matchResult: Match = {
+        id: 1,
+        isAccepted: true,
+        userId: 2,
+        likedUserId: 3,
+      };
+
       const data = {
         id: 1,
         userId: 2,
       } as AcceptMatch;
 
-      await matchService.acceptMatch(data);
+      mockMatchRepository.findMatchById.mockResolvedValue(matchResult);
 
+      await matchService.acceptMatch(data);
       expect(mockMatchRepository.acceptMatch).toHaveBeenCalledWith(data);
+    });
+    it('should not find match and throw BadRequestException', async () => {
+      const data = {
+        id: 999,
+        userId: 2,
+      } as AcceptMatch;
+      mockMatchRepository.findMatchById.mockResolvedValue(undefined);
+
+      await expect(matchService.acceptMatch(data)).rejects.toThrow(
+        new BadRequestException('Match not found, probably user is deleted'),
+      )
     });
   });
 

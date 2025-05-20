@@ -14,6 +14,7 @@ describe('MatchRepository', () => {
       create: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
+      findUnique: jest.fn(),
     },
   };
 
@@ -36,6 +37,40 @@ describe('MatchRepository', () => {
     expect(matchRepository).toBeDefined();
   });
 
+  describe('findMatchById', () => {
+    it('should return a match by id', async () => {
+      const matchResult: Match = {
+        id: 1,
+        isAccepted: true,
+        userId: 2,
+        likedUserId: 3,
+      }
+      const id = 1;
+      mockPrismaService.match.findUnique.mockReturnValue(matchResult);
+
+      const match = await matchRepository.findMatchById(id);
+
+      expect(match).toEqual(matchResult);
+      expect(mockPrismaService.match.findUnique).toHaveBeenCalledWith({
+        where: {
+          id,
+        },
+      });
+    });
+    it('should not return a match by id', async () => {
+      const id = 999999;
+      mockPrismaService.match.findUnique.mockReturnValue(undefined);
+
+      const match = await matchRepository.findMatchById(id);
+
+      expect(match).toEqual(undefined);
+      expect(mockPrismaService.match.findUnique).toHaveBeenCalledWith({
+        where: {
+          id,
+        },
+      });
+    });
+  });
   describe('acceptMatch', () => {
     it('should accept a match in the database', async () => {
       const data = {

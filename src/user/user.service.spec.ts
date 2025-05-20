@@ -8,6 +8,7 @@ import {
   UpdateUserData,
   UpdateUserPreferences,
 } from './user.types';
+import { BadRequestException } from '@nestjs/common';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -206,6 +207,12 @@ describe('UserService', () => {
         { id: 2, email: 'user2@example.com', name: 'User 2' } as User,
         { id: 3, email: 'user3@example.com', name: 'User 3' } as User,
       ];
+      const user: UserDto = {
+        id: 1,
+        userData: { id: 1 },
+        userPreferences: { id: 1 },
+      } as UserDto;
+      mockUserRepository.getUser.mockResolvedValue(user);
 
       mockUserRepository.findNearestUsersByUserId = jest
         .fn()
@@ -225,10 +232,79 @@ describe('UserService', () => {
       });
     });
 
+    it('should not return a user', async () => {
+      const userId = 1;
+      const limit = 5;
+      const seen = [1, 2, 3];
+      mockUserRepository.getUser.mockResolvedValue(undefined);
+
+      await expect(
+        userService.findNearestUsersByUserId({
+          userId,
+          limit,
+          seen,
+        }),
+      ).rejects.toThrow(new BadRequestException('User not found'));
+    });
+
+    it('should return a user without userPreferences', async () => {
+      const userId = 1;
+      const limit = 5;
+      const seen = [1, 2, 3];
+
+      const user: UserDto = {
+        id: 1,
+        userData: { id: 1 },
+      } as UserDto;
+      mockUserRepository.getUser.mockResolvedValue(user);
+
+      await expect(
+        userService.findNearestUsersByUserId({
+          userId,
+          limit,
+          seen,
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'User preferences not found, you need to create one first',
+        ),
+      );
+    });
+    it('should return a user without userData', async () => {
+      const userId = 1;
+      const limit = 5;
+      const seen = [1, 2, 3];
+
+      const user: UserDto = {
+        id: 1,
+        userPreferences: { id: 1 },
+      } as UserDto;
+      mockUserRepository.getUser.mockResolvedValue(user);
+
+      await expect(
+        userService.findNearestUsersByUserId({
+          userId,
+          limit,
+          seen,
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'User data not found, you need to create one first',
+        ),
+      );
+    });
+
     it('should return an empty array if no users are found', async () => {
       const userId = 1;
       const limit = 5;
       const seen = [1, 2, 3];
+
+      const user: UserDto = {
+        id: 1,
+        userData: { id: 1 },
+        userPreferences: { id: 1 },
+      } as UserDto;
+      mockUserRepository.getUser.mockResolvedValue(user);
 
       mockUserRepository.findNearestUsersByUserId = jest
         .fn()
