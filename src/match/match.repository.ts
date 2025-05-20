@@ -7,6 +7,14 @@ import { Match } from '@prisma/client';
 export class MatchRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async findMatchById(id: number): Promise<Match | null> {
+    return await this.prismaService.match.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
+
   async getUnacceptedMatchesForUser(userId: number): Promise<Match[]> {
     return await this.prismaService.match.findMany({
       where: {

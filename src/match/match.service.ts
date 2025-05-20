@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AcceptMatch, CreateMatch } from './match.types';
 import { MatchRepository } from './match.repository';
 import { Match } from '@prisma/client';
@@ -20,6 +20,10 @@ export class MatchService {
   }
 
   async acceptMatch(data: AcceptMatch): Promise<void> {
+    const match = await this.matchRepository.findMatchById(data.id)
+    if (!match) {
+      throw new BadRequestException('Match not found, probably user is deleted');
+    }
     return await this.matchRepository.acceptMatch(data);
   }
 }

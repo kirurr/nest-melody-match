@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { Prisma, User, UserData } from '@prisma/client';
 import { CreateUserPreferences, FindNearestUsers, UpdateUserData, UpdateUserPreferences } from './user.types';
@@ -41,6 +41,16 @@ export class UserService {
   }
 
   async findNearestUsersByUserId(data: FindNearestUsers): Promise<User[]> {
+    const user = await this.userRepository.getUser(data.userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    if (!user.userPreferences) {
+      throw new BadRequestException('User preferences not found, you need to create one first');
+    }
+    if (!user.userData) {
+      throw new BadRequestException('User data not found, you need to create one first');
+    }
     return await this.userRepository.findNearestUsersByUserId(data);
   }
 
