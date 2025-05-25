@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Post,
   Req,
   Res,
   UseGuards,
@@ -75,15 +76,16 @@ export class AuthController {
       refreshToken: refresh_token,
       isNewUser,
     } = await this.authService.handleGoogleOAuth(req.user);
-    if (isNewUser) res.send({ access_token, refresh_token });
-    else res.status(201).send({ access_token, refresh_token });
+    // if (isNewUser) res.send({ access_token, refresh_token });
+    // else res.status(201).send({ access_token, refresh_token });
+		res.redirect(`myapp://callback?access_token=${access_token}&refresh_token=${refresh_token}`);
   }
 
   @ApiOperation({
     summary: 'Refresh access token',
     description: 'Refresh access token by providing valid refresh token',
   })
-  @Get('refresh')
+  @Post('refresh')
   @ApiOkResponse({
     description:
       'Refresh token is valid, returns new access and refresh tokens',

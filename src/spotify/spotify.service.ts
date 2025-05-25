@@ -26,7 +26,7 @@ export class SpotifyService {
 
   async tryFetchSpotifyUserTopArtists(
     access_token: string,
-    limit: number = 10,
+    limit: number = 5,
   ): Promise<Response | null> {
     const payload: RequestInit = {
       method: 'GET',
@@ -35,7 +35,7 @@ export class SpotifyService {
       },
     };
 
-    const url = `https://api.spotify.com/v1/me/top/artists?&limit=${limit}`;
+    const url = `https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=${limit}`;
 
     const response = await fetch(url, payload).catch(() => {
       throw new InternalServerErrorException(
@@ -77,7 +77,7 @@ export class SpotifyService {
   async getSpotifyGenresByUserId(
     userId: number,
     access_token: string,
-    limit: number = 10,
+    limit: number = 5,
   ): Promise<string[]> {
     let response = await this.tryFetchSpotifyUserTopArtists(
       access_token,

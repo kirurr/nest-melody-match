@@ -3,23 +3,37 @@ import { Injectable } from '@nestjs/common';
 import { Genre as PrismaGenre } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 
-
 @Injectable()
 export class GenreRepository {
   constructor(private readonly db: PrismaService) {}
 
-	async findGenresByNames(genresNames: string[]): Promise<PrismaGenre[]> {
-		return await this.db.genre.findMany({
-			where: {
-				OR: genresNames.map((name) => ({
-					name: {
-						contains: name,
-						mode: 'insensitive',
-					},
-				})),
-			}
-		})
-	}
+  async findGenresByOneName(
+    genreName: string,
+    limit: number = 5,
+  ): Promise<PrismaGenre[]> {
+    return await this.db.genre.findMany({
+      where: {
+        name: {
+          contains: genreName,
+          mode: 'insensitive',
+        },
+      },
+      take: limit,
+    });
+  }
+
+  async findGenresByNames(genresNames: string[]): Promise<PrismaGenre[]> {
+    return await this.db.genre.findMany({
+      where: {
+        OR: genresNames.map((name) => ({
+          name: {
+            equals: name,
+            mode: 'insensitive',
+          },
+        })),
+      },
+    });
+  }
 
   async getGenresByIds(genresIds: number[]): Promise<Genre[]> {
     const rawGenres: {

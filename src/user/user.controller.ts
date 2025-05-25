@@ -122,10 +122,8 @@ export class UserController {
   ) {
     try {
       await this.userService.createUserData({
-        age: body.age,
-        sex: body.sex,
-        displayName: body.displayName,
         user: { connect: { id: user.id } },
+				...body
       });
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {

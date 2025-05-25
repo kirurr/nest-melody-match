@@ -15,9 +15,6 @@ export class UserRepository {
 
   async deleteUser(id: number): Promise<void> {
     await this.db.$transaction([
-      this.db.user.delete({
-        where: { id },
-      }),
       this.db.userData.delete({
         where: { userId: id },
       }),
@@ -29,6 +26,12 @@ export class UserRepository {
       }),
       this.db.match.deleteMany({
         where: { OR: [{ likedUserId: id }, { userId: id }] },
+      }),
+			this.db.spotifyActiveRefreshToken.delete({
+				where: { userId: id },
+			}),
+      this.db.user.delete({
+        where: { id },
       }),
     ]);
   }
@@ -155,34 +158,23 @@ export class UserRepository {
     const users: User[] = await this.db.$queryRaw`
         SELECT u.*
         FROM "User" AS u
-        JOIN "UserPreferences" AS up ON u.id = up."userId"
-        JOIN "UserData" AS ud ON u.id = ud."userId"
-        JOIN "UserPreferences" AS up1 ON up1."userId" = ${userId}
-        JOIN "UserData" AS ud1 ON ud1."userId" = ${userId}
+        JOIN "UserPreferences" AS targetPref ON u.id = targetPref."userId"
+        JOIN "UserData" AS targetData ON u.id = targetData."userId"
+        JOIN "UserPreferences" AS userPref ON userPref."userId" = ${userId}
+        JOIN "UserData" AS userData ON userData."userId" = ${userId}
         WHERE u.id != ${userId}
           AND u.id NOT IN(${seen.length > 0 ? Prisma.join(seen) : 0})
-          AND 1 = 
-          CASE
-            WHEN up1."desiredSex" = 'BOTH' and up."desiredSex" = 'BOTH' THEN 1
-            WHEN up1."desiredSex" = 'MALE' and ud.sex = 'MALE' 
-              and ud1.sex = 
-                CASE
-                  WHEN up."desiredSex" = 'BOTH' THEN ud1.sex
-                  WHEN up."desiredSex" = 'MALE' THEN 'MALE' ELSE 'FEMALE'
-                END 
-            THEN 1
-            WHEN up1."desiredSex" = 'FEMALE' and ud.sex = 'FEMALE' 
-              and ud1.sex = 
-                CASE
-                  WHEN up."desiredSex" = 'BOTH' THEN ud1.sex
-                  WHEN up."desiredSex" = 'MALE' THEN 'MALE' ELSE 'FEMALE'
-                END 
-            THEN 1
-            ELSE 0
-          END
+					AND (
+						(userPref."desiredSex" = 'BOTH' AND targetPref."desiredSex" IN ('BOTH', 'MALE', 'FEMALE'))
+						AND targetData.sex IN ('MALE', 'FEMALE')
+						OR
+						(userPref."desiredSex" = 'MALE' AND targetData.sex = 'MALE' AND targetPref."desiredSex" IN ('BOTH', 'MALE'))
+						OR
+						(userPref."desiredSex" = 'FEMALE' AND targetData.sex = 'FEMALE' AND targetPref."desiredSex" IN ('BOTH', 'FEMALE'))
+					)
         ORDER BY 
-          up."genresVector" <-> up1."genresVector",
-          ABS(ud.age - ud1.age)
+          targetPref."genresVector" <-> userPref."genresVector",
+          ABS(targetData.age - userData.age)
         LIMIT ${limit}::int`;
 
     if (users.length === 0) {

@@ -6,6 +6,10 @@ import { Genre } from '@prisma/client';
 export class GenreService {
 	constructor(private readonly genreRepository: GenreRepository) {}
 
+	async findGenresByOneName(genresName: string, limit?: number): Promise<Genre[]> {
+		return await this.genreRepository.findGenresByOneName(genresName, limit);
+	}
+
 	async findGenresByNames(genresNames: string[]): Promise<Genre[]> {
 		const genresSet = new Set<string>(genresNames)
 		return await this.genreRepository.findGenresByNames([...genresSet.keys()]);

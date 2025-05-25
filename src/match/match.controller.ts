@@ -131,18 +131,10 @@ export class MatchController {
     @AuthorizedUser() user: AuthorizedUserDTO,
     @Res() res: Response,
   ) {
-    let seen: number[];
-    if (query.seen === undefined) {
-      seen = [];
-    } else if (query.seen === null) {
-      seen = [];
-    } else {
-      if (Array.isArray(query.seen)) {
-        seen = query.seen.map((id) => +id);
-      } else {
-        seen = [+query.seen];
-      }
-    }
+		let seen = query.seen ? query.seen.split(',').map((id) => {
+			if (isNaN(+id)) return 0;
+			return +id;
+		}) : [];
     res.send(
       await this.userService.findNearestUsersByUserId({
         userId: user.id,

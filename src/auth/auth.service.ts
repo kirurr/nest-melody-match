@@ -27,7 +27,7 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string } | null> {
     let userId: number;
     try {
-      userId = this.jwtService.verify<{ id: number }>(refreshToken).id;
+      userId = +this.jwtService.verify<{ id: string }>(refreshToken).id;
       //eslint-disable-next-line
     } catch (e) {
       return null;
@@ -115,6 +115,17 @@ export class AuthService {
         );
         await this.refreshTokenService.updateByUserId(user.id, refreshToken);
       }
+
+			try{
+				this.jwtService.verify<{id: string}>(refreshToken);
+			} catch(e) {
+        refreshToken = this.jwtService.sign(
+          { id: user.id.toString() },
+          { expiresIn: '7d' },
+        );
+        await this.refreshTokenService.updateByUserId(user.id, refreshToken);
+
+			}
     }
 
     const accessToken = this.jwtService.sign(
