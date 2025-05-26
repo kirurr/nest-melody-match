@@ -1,4 +1,4 @@
-import { UserData, UserPreferences } from '@prisma/client';
+import { UserContact, UserData, UserPreferences } from '@prisma/client';
 
 export type FindNearestUsers = {
   userId: number;
@@ -14,3 +14,7 @@ export type CreateUserPreferences = Omit<UserPreferences, 'id'> & {
 };
 
 export type UpdateUserData = Partial<Omit<UserData, 'id'>>;
+
+export type CreateUserContacts = Omit<UserContact, 'id'>[];
+
+export type UpdateUserContact = Partial<Omit<UserContact, 'id'>> & {id: number};

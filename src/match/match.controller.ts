@@ -138,7 +138,7 @@ export class MatchController {
     res.send(
       await this.userService.findNearestUsersByUserId({
         userId: user.id,
-        limit: query.limit,
+        limit: query.limit ?? 2,
         seen: seen,
       }),
     );

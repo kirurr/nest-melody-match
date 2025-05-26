@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { Prisma, User, UserData } from '@prisma/client';
-import { CreateUserPreferences, FindNearestUsers, UpdateUserData, UpdateUserPreferences } from './user.types';
+import { CreateUserContacts, CreateUserPreferences, FindNearestUsers, UpdateUserContact, UpdateUserData, UpdateUserPreferences } from './user.types';
 import { UserDto } from './dto/user-dto';
 
 @Injectable()
@@ -14,6 +14,10 @@ export class UserService {
 
   async getUser(id: number): Promise<UserDto | null> {
     return await this.userRepository.getUser(id);
+  }
+
+  async getMatchedUser(id: number, userId: number): Promise<UserDto | null> {
+    return await this.userRepository.getMatchedUser(id, userId);
   }
 
   async findUserById(id: number): Promise<User | null> {
@@ -57,4 +61,13 @@ export class UserService {
   async updateUserData(data: UpdateUserData): Promise<void> {
     return await this.userRepository.updateUserData(data);
   }
+
+	async createUserContacts(data: CreateUserContacts, userId: number): Promise<void> {
+		return await this.userRepository.createUserContacts(data, userId);
+	}
+
+	async updateUserContact(data: UpdateUserContact): Promise<void> {
+		return await this.userRepository.updateUserContact(data );
+	}
+
 }

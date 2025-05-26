@@ -59,6 +59,8 @@ model UserData {
     displayName String
     about       String @default("")
     imageUrl    String @default("")
+
+    contacts     UserContact[]        
 }
 
 model UserPreferences {
@@ -66,8 +68,9 @@ model UserPreferences {
     user         User                      @relation(fields: [userId], references: [id])
     userId       Int                       @unique
     genresVector Unsupported("vector(5)")?
-    genres     Genre[]        
     desiredSex PreferencesSex
+
+    genres     Genre[]        
 }
 
 model Genre {
@@ -76,6 +79,14 @@ model Genre {
     vector Unsupported("vector(5)")?
 
     userPreferences UserPreferences[]
+}
+
+model UserContact {
+	id Int @id @default(autoincrement())
+	name String
+	value String
+
+	userData UserData[]
 }
 
 model Match {

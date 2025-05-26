@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Prisma, User, UserData } from '@prisma/client';
 import {
+  CreateUserContacts,
   CreateUserPreferences,
   FindNearestUsers,
+  UpdateUserContact,
   UpdateUserData,
   UpdateUserPreferences,
 } from './user.types';
@@ -27,13 +29,79 @@ export class UserRepository {
       this.db.match.deleteMany({
         where: { OR: [{ likedUserId: id }, { userId: id }] },
       }),
-			this.db.spotifyActiveRefreshToken.delete({
-				where: { userId: id },
-			}),
+      this.db.spotifyActiveRefreshToken.delete({
+        where: { userId: id },
+      }),
       this.db.user.delete({
         where: { id },
       }),
     ]);
+  }
+
+  async getMatchedUser(id: number, userId: number): Promise<UserDto | null> {
+    if (id === userId) {
+      return await this.db.user.findUnique({
+        where: { id },
+        include: {
+          userData: {
+            include: {
+              contacts: true,
+            },
+          },
+          userPreferences: {
+            include: {
+              genres: true,
+            },
+          },
+        },
+      });
+    }
+
+    const match = await this.db.match.findFirst({
+      where: {
+        OR: [
+          {
+            userId: userId,
+            likedUserId: id,
+            isAccepted: true,
+          },
+          {
+            likedUserId: userId,
+            userId: id,
+            isAccepted: true,
+          },
+        ],
+      },
+    });
+
+    if (!match) {
+      return await this.db.user.findUnique({
+        where: { id },
+        include: {
+          userData: true,
+          userPreferences: {
+            include: {
+              genres: true,
+            },
+          },
+        },
+      });
+    }
+    return await this.db.user.findUnique({
+      where: { id },
+      include: {
+        userData: {
+          include: {
+            contacts: true,
+          },
+        },
+        userPreferences: {
+          include: {
+            genres: true,
+          },
+        },
+      },
+    });
   }
 
   async getUser(id: number): Promise<UserDto | null> {
@@ -194,6 +262,37 @@ export class UserRepository {
             genres: true,
           },
         },
+      },
+    });
+  }
+
+  async createUserContacts(
+    data: CreateUserContacts,
+    userId: number,
+  ): Promise<void> {
+    await Promise.all(
+      data.map((contact) =>
+        this.db.userContact.create({
+          data: {
+            ...contact,
+            userData: {
+              connect: {
+                userId,
+              },
+            },
+          },
+        }),
+      ),
+    );
+  }
+
+  async updateUserContact(data: UpdateUserContact): Promise<void> {
+    await this.db.userContact.update({
+      where: {
+        id: data.id,
+      },
+      data: {
+        ...data,
       },
     });
   }

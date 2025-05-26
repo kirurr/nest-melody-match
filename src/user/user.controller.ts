@@ -31,6 +31,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUserDTO } from './dto/get-user.dto';
 import UpdateUserDataDTO from './dto/update-user-data.dto';
 import UpdateUserPreferencesDTO from './dto/update-user-preferences.dto';
+import { CreateUserContactsDTO } from './dto/create-user-contacts.dto';
+import { UpdateUserContactDTO } from './dto/update-user-contact.dto';
 
 @Controller('user')
 export class UserController {
@@ -83,6 +85,33 @@ export class UserController {
     res.send(result);
   }
 
+  @Get('matched')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get matched user',
+    description: 'Get matched user with data and contacts and preferences by id',
+  })
+  @ApiOkResponse({
+    description: 'User with data and contacts and preferences',
+    type: UserDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'User with provided id is not found',
+  })
+  async getMatchedUser(
+    @Query(new ValidationPipe()) query: GetUserDTO,
+    @AuthorizedUser() user: AuthorizedUserDTO,
+    @Res() res: Response,
+  ) {
+    const result = await this.userService.getMatchedUser(
+      query.id ? +query.id : user.id,
+			user.id
+    );
+    if (!result) res.sendStatus(400);
+    res.send(result);
+  }
+
   @Patch('data')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -123,7 +152,7 @@ export class UserController {
     try {
       await this.userService.createUserData({
         user: { connect: { id: user.id } },
-				...body
+        ...body,
       });
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {
@@ -208,4 +237,41 @@ export class UserController {
 
     res.sendStatus(201);
   }
+
+	@ApiOperation({
+		summary: 'Create user contacts',
+		description: 'Create user contacts for signed in user',
+	})
+	@ApiCreatedResponse({
+		description: 'UserContacts is created',
+	})
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Patch('contacts')
+  async updateUserContact(
+    @Body(new ValidationPipe()) body: UpdateUserContactDTO,
+    @Res() res: Response,
+  ) {
+		await this.userService.updateUserContact(body);
+		return res.sendStatus(200);
+	}
+
+	@ApiOperation({
+		summary: 'Create user contacts',
+		description: 'Create user contacts for signed in user',
+	})
+	@ApiCreatedResponse({
+		description: 'UserContacts is created',
+	})
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('contacts')
+  async createUserContacts(
+    @Body(new ValidationPipe()) body: CreateUserContactsDTO,
+    @Res() res: Response,
+    @AuthorizedUser() user: AuthorizedUserDTO,
+  ) {
+		await this.userService.createUserContacts(body.contacts, user.id);
+		return res.sendStatus(201);
+	}
 }

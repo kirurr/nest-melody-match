@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { $Enums, UserData } from '@prisma/client';
+import { UserContactDTO } from './user-contact.dto';
 
 export default class UserDataDTO implements UserData {
   @ApiProperty()
@@ -18,4 +19,9 @@ export default class UserDataDTO implements UserData {
   about: string;
   @ApiProperty()
   imageUrl: string;
+
+  @ApiProperty({
+		type: [UserContactDTO],
+	})
+	contacts?: UserContactDTO[];
 }
