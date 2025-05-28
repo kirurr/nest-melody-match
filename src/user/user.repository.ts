@@ -17,22 +17,22 @@ export class UserRepository {
 
   async deleteUser(id: number): Promise<void> {
     await this.db.$transaction([
-      this.db.userData.delete({
+      this.db.userData.deleteMany({
         where: { userId: id },
       }),
-      this.db.userPreferences.delete({
+      this.db.userPreferences.deleteMany({
         where: { userId: id },
       }),
-      this.db.activeRefreshToken.delete({
+      this.db.activeRefreshToken.deleteMany({
         where: { userId: id },
       }),
       this.db.match.deleteMany({
         where: { OR: [{ likedUserId: id }, { userId: id }] },
       }),
-      this.db.spotifyActiveRefreshToken.delete({
+      this.db.spotifyActiveRefreshToken.deleteMany({
         where: { userId: id },
       }),
-      this.db.user.delete({
+      this.db.user.deleteMany({
         where: { id },
       }),
     ]);
