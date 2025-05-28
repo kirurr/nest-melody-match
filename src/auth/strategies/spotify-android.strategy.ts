@@ -4,12 +4,12 @@ import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, Profile, VerifyCallback } from "passport-spotify";
 
 @Injectable()
-export class SpotifyStrategy extends PassportStrategy(Strategy, 'spotify') {
+export class SpotifyAndroidStrategy extends PassportStrategy(Strategy, 'spotify-android') {
 	constructor(private readonly configService: ConfigService) {
 		super({
 			clientID: configService.get<string>('SPOTIFY_CLIENT_ID')!,
 			clientSecret: configService.get<string>('SPOTIFY_CLIENT_SECRET')!,
-			callbackURL: configService.get<string>('SPOTIFY_REDIRECT_URI')!,
+			callbackURL: configService.get<string>('SPOTIFY_ANDROID_REDIRECT_URI')!,
 			scope: ['user-read-email', 'user-read-private', 'user-top-read'],
 			showDialog: true
 		})

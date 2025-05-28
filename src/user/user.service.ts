@@ -16,8 +16,8 @@ export class UserService {
     return await this.userRepository.getUser(id);
   }
 
-  async getMatchedUser(id: number, userId: number): Promise<UserDto | null> {
-    return await this.userRepository.getMatchedUser(id, userId);
+  async getMatchedUser(targetId: number, userId: number): Promise<UserDto | null> {
+    return await this.userRepository.getMatchedUser(targetId, userId);
   }
 
   async findUserById(id: number): Promise<User | null> {

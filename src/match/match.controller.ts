@@ -36,10 +36,10 @@ export class MatchController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({
-    description: 'Returns list of unaccepted matches',
+    description: 'Returns list of unaccepted matches with users data',
   })
   @ApiOperation({
-    summary: 'Get unaccepted matches',
+    summary: 'Get unaccepted matches with users data',
     description: 'Get unaccepted matches for the user',
   })
   @Get('unaccepted')
@@ -84,7 +84,7 @@ export class MatchController {
     ],
   })
   @ApiOperation({
-    summary: 'Get accepted matches',
+    summary: 'Get accepted matches with matched user data',
     description: 'Get accepted matches for the user',
   })
   @UseGuards(JwtAuthGuard)

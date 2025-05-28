@@ -60,7 +60,7 @@ export class AuthService {
 
   async handleSpotifyOAuth(
     reqUser: SpotifyUser,
-  ): Promise<HandleAuthReturnType & { spotifyAccessToken: string }> {
+  ): Promise<HandleAuthReturnType & { spotifyAccessToken: string, spotifyRefreshToken: string }> {
     const authResult = await this.handleOAuth(reqUser);
 
     if (authResult.isNewUser) {
@@ -75,7 +75,7 @@ export class AuthService {
       );
     }
 
-    return { ...authResult, spotifyAccessToken: reqUser.tokens.accessToken };
+    return { ...authResult, spotifyAccessToken: reqUser.tokens.accessToken, spotifyRefreshToken: reqUser.tokens.refreshToken };
   }
 
   async handleOAuth(reqUser: {

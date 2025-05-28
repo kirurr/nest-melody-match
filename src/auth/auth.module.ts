@@ -10,6 +10,8 @@ import { RefreshTokenModule } from 'src/refresh-token/refresh-token.module';
 import { UserModule } from 'src/user/user.module';
 import { SpotifyStrategy } from './strategies/spotify.strategy';
 import { SpotifyModule } from 'src/spotify/spotify.module';
+import { GoogleAndroidStrategy } from './strategies/google-android.strategy';
+import { SpotifyAndroidStrategy } from './strategies/spotify-android.strategy';
 
 @Module({
   imports: [
@@ -23,9 +25,16 @@ import { SpotifyModule } from 'src/spotify/spotify.module';
     }),
     RefreshTokenModule,
     SpotifyModule,
-    UserModule
+    UserModule,
   ],
   controllers: [AuthController],
-  providers: [GoogleStrategy, JwtStrategy, AuthService, SpotifyStrategy],
+  providers: [
+    GoogleStrategy,
+    GoogleAndroidStrategy,
+    SpotifyAndroidStrategy,
+    SpotifyStrategy,
+    JwtStrategy,
+    AuthService,
+  ],
 })
 export class AuthModule {}

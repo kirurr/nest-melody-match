@@ -4,12 +4,12 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+export class GoogleAndroidStrategy extends PassportStrategy(Strategy, 'google-android') {
   constructor(private readonly configService: ConfigService) {
     super({
       clientID: configService.get<string>('GOOGLE_CLIENT_ID')!,
       clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET')!,
-      callbackURL: configService.get<string>('GOOGLE_REDIRECT_URI')!,
+      callbackURL: configService.get<string>('GOOGLE_ANDROID_REDIRECT_URI')!,
       scope: ['email', 'profile'],
 			authorizationURL: 'https://accounts.google.com/o/oauth2/auth?prompt=consent',
     });

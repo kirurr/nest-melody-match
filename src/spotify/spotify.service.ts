@@ -1,7 +1,6 @@
 import {
   Injectable,
   InternalServerErrorException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { SpotifyRepository } from './spotify.repository';
 import { CryptoService } from '../refresh-token/crypto-service';
@@ -52,8 +51,8 @@ export class SpotifyService {
 		if (!access_token) {
 			const refreshToken = await this.getDecryptedRefreshTokenByUserId(userId);
 			if (!refreshToken)
-				throw new UnauthorizedException(
-					'Refresh token is invalid',
+				throw new InternalServerErrorException(
+					'Refresh token is invalid or non existent',
 				);
 			access_token = await this.getNewSpotifyAccessToken(userId, refreshToken)
 		}
@@ -86,7 +85,7 @@ export class SpotifyService {
     if (!response) {
       const refreshToken = await this.getDecryptedRefreshTokenByUserId(userId);
       if (!refreshToken)
-        throw new UnauthorizedException(
+        throw new InternalServerErrorException(
           'Refresh token is invalid',
         );
       const newAccessToken = await this.getNewSpotifyAccessToken(
@@ -141,7 +140,7 @@ export class SpotifyService {
     });
     if (response.status !== 200) {
       await this.deleteRefreshTokenByUserId(userId);
-      throw new UnauthorizedException(
+      throw new InternalServerErrorException(
         'Recieved invalid response code from Spotify',
       );
     }

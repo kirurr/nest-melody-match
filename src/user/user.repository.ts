@@ -38,10 +38,13 @@ export class UserRepository {
     ]);
   }
 
-  async getMatchedUser(id: number, userId: number): Promise<UserDto | null> {
-    if (id === userId) {
+  async getMatchedUser(
+    targetId: number,
+    userId: number,
+  ): Promise<UserDto | null> {
+    if (targetId === userId) {
       return await this.db.user.findUnique({
-        where: { id },
+        where: { id: targetId },
         include: {
           userData: {
             include: {
@@ -62,12 +65,12 @@ export class UserRepository {
         OR: [
           {
             userId: userId,
-            likedUserId: id,
+            likedUserId: targetId,
             isAccepted: true,
           },
           {
             likedUserId: userId,
-            userId: id,
+            userId: targetId,
             isAccepted: true,
           },
         ],
@@ -76,7 +79,7 @@ export class UserRepository {
 
     if (!match) {
       return await this.db.user.findUnique({
-        where: { id },
+        where: { id: targetId, NOT: { id: userId } },
         include: {
           userData: true,
           userPreferences: {
@@ -88,7 +91,7 @@ export class UserRepository {
       });
     }
     return await this.db.user.findUnique({
-      where: { id },
+      where: { id: targetId, NOT: { id: userId } },
       include: {
         userData: {
           include: {
