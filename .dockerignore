@@ -3,3 +3,4 @@ dist/
 coverage/
 .github/
 .git/
+genres-w2v/
