@@ -25,6 +25,7 @@ import { MatchService } from './match.service';
 import MatchDTO from './dto/match.dto';
 import AcceptMatchDTO from './dto/accept-match.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserDataMatchDTO } from './dto/user-data-match.dto';
 
 @Controller('match')
 export class MatchController {
@@ -37,6 +38,7 @@ export class MatchController {
   @ApiBearerAuth()
   @ApiOkResponse({
     description: 'Returns list of unaccepted matches with users data',
+		type: [UserDataMatchDTO]
   })
   @ApiOperation({
     summary: 'Get unaccepted matches with users data',

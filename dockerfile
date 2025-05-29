@@ -12,8 +12,10 @@ COPY . .
 
 RUN pnpm prisma generate
 
+RUN pnpm prisma migrate deploy
+
 RUN pnpm build
 
 EXPOSE 3000
 
-CMD ["pnpm", "start:dev"]
+CMD ["pnpm", "start:prod"]
