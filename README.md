@@ -7,6 +7,7 @@
     - [Setting up the Google OAuth](#setting-up-the-google-oauth)
     - [Setting up the Spotify OAuth](#setting-up-the-spotify-oauth)
   - [Running the app](#running-the-app)
+    - [Setiing up the database schema](#setiing-up-the-database-schema)
     - [Seeding the database with genres](#seeding-the-database-with-genres)
 
 
@@ -14,6 +15,8 @@
 - [Docker](https://www.docker.com) with Docker Compose support
 - [Python](https://www.python.org) 3.13+
 - [Ngrok](https://ngrok.com) for local development
+- [Node.js](https://nodejs.org/en) 18+
+- [NPM](https://nodejs.org/en)
 
 ## Installation
 ### Initial setup
@@ -78,6 +81,13 @@ cd nest-melody-match
 docker compose up
 ```
 > Docker will download all the required images, build the app, apply schema to database and run the app.
+
+### Setiing up the database schema
+
+1. In the root project folder run following command to apply schema to the database:
+``` 
+npx prisma migrate deploy
+```
 
 ### Seeding the database with genres
 1. Go to the `genres-w2v` folder:
