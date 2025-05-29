@@ -86,8 +86,8 @@ docker compose up
 cd genres-w2v
 ```
 
-2. Create virtual environment:
-> [Python docs for more info](https://docs.python.org/3/library/venv.html)
+2. Create and activate a virtual environment:
+>[Python docs for more info](https://docs.python.org/3/library/venv.html)
 
 3. Install dependencies:
 
