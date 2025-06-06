@@ -33,6 +33,7 @@ import UpdateUserDataDTO from './dto/update-user-data.dto';
 import UpdateUserPreferencesDTO from './dto/update-user-preferences.dto';
 import { CreateUserContactsDTO } from './dto/create-user-contacts.dto';
 import { UpdateUserContactDTO } from './dto/update-user-contact.dto';
+import { UpdateUserContactsDTO } from './dto/update-user-contacts.dto';
 
 @Controller('user')
 export class UserController {
@@ -239,20 +240,21 @@ export class UserController {
   }
 
 	@ApiOperation({
-		summary: 'Create user contacts',
-		description: 'Create user contacts for signed in user',
+		summary: 'Update user contacts',
+		description: 'Update user contacts for signed in user',
 	})
-	@ApiCreatedResponse({
-		description: 'UserContacts is created',
+	@ApiOkResponse({
+		description: 'UserContacts is updated',
 	})
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch('contacts')
   async updateUserContact(
-    @Body(new ValidationPipe()) body: UpdateUserContactDTO,
+    @Body(new ValidationPipe()) body: UpdateUserContactsDTO,
+		@AuthorizedUser() user: AuthorizedUserDTO,
     @Res() res: Response,
   ) {
-		await this.userService.updateUserContact(body);
+		await this.userService.updateUserContacts(body.contacts, user.id);
 		return res.sendStatus(200);
 	}
 

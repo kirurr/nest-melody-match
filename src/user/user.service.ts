@@ -1,7 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
-import { Prisma, User, UserData } from '@prisma/client';
-import { CreateUserContacts, CreateUserPreferences, FindNearestUsers, UpdateUserContact, UpdateUserData, UpdateUserPreferences } from './user.types';
+import { Prisma, User, UserContact, UserData } from '@prisma/client';
+import {
+  CreateUserContacts,
+  CreateUserPreferences,
+  FindNearestUsers,
+  UpdateUserContacts,
+  UpdateUserData,
+  UpdateUserPreferences,
+} from './user.types';
 import { UserDto } from './dto/user-dto';
 
 @Injectable()
@@ -16,7 +23,10 @@ export class UserService {
     return await this.userRepository.getUser(id);
   }
 
-  async getMatchedUser(targetId: number, userId: number): Promise<UserDto | null> {
+  async getMatchedUser(
+    targetId: number,
+    userId: number,
+  ): Promise<UserDto | null> {
     return await this.userRepository.getMatchedUser(targetId, userId);
   }
 
@@ -33,7 +43,7 @@ export class UserService {
   }
 
   async createUserData(data: Prisma.UserDataCreateInput): Promise<UserData> {
-    return await this.userRepository.createUserData(data)
+    return await this.userRepository.createUserData(data);
   }
 
   async createUserPreferences(data: CreateUserPreferences): Promise<void> {
@@ -50,10 +60,14 @@ export class UserService {
       throw new BadRequestException('User not found');
     }
     if (!user.userPreferences) {
-      throw new BadRequestException('User preferences not found, you need to create one first');
+      throw new BadRequestException(
+        'User preferences not found, you need to create one first',
+      );
     }
     if (!user.userData) {
-      throw new BadRequestException('User data not found, you need to create one first');
+      throw new BadRequestException(
+        'User data not found, you need to create one first',
+      );
     }
     return await this.userRepository.findNearestUsersByUserId(data);
   }
@@ -62,12 +76,43 @@ export class UserService {
     return await this.userRepository.updateUserData(data);
   }
 
-	async createUserContacts(data: CreateUserContacts, userId: number): Promise<void> {
-		return await this.userRepository.createUserContacts(data, userId);
-	}
+  async createUserContacts(
+    data: CreateUserContacts,
+    userId: number,
+  ): Promise<void> {
+    return await this.userRepository.createUserContacts(data, userId);
+  }
 
-	async updateUserContact(data: UpdateUserContact): Promise<void> {
-		return await this.userRepository.updateUserContact(data );
-	}
+  async updateUserContacts(
+    data: UpdateUserContacts,
+    userId: number,
+  ): Promise<void> {
+    const user = await this.userRepository.getMatchedUser(userId, userId);
+    if (!user) throw new BadRequestException('User not found');
 
+    const contactsForDeletion: UserContact[] = [];
+
+    user?.userData?.contacts?.forEach((contact) => {
+      if (data.find((e) => (e.id == contact.id)) == undefined)
+        contactsForDeletion.push(contact);
+    });
+
+    await Promise.all(
+      contactsForDeletion.map((contact) =>
+        this.userRepository.deleteUserContact(contact.id),
+      ),
+    );
+
+    await Promise.all(
+      data.map(async (contact) => {
+        if (!contact.id) {
+          return await this.userRepository.createUserContacts(
+            [contact as UserContact],
+            userId,
+          );
+        }
+        // await this.userRepository.updateUserContact(contact);
+      }),
+    );
+  }
 }

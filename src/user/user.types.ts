@@ -17,4 +17,7 @@ export type UpdateUserData = Partial<Omit<UserData, 'id'>>;
 
 export type CreateUserContacts = Omit<UserContact, 'id'>[];
 
+export type UpdateUserContacts = Partial<Omit<UserContact, 'id'>> & {id: number}[];
+
 export type UpdateUserContact = Partial<Omit<UserContact, 'id'>> & {id: number};
+

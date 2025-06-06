@@ -5,7 +5,10 @@ import { UserContactDTO } from "./user-contact.dto";
 export class UpdateUserContactDTO extends PartialType(OmitType(UserContactDTO, ['id'])){
 	@IsNumber()
 	@IsNotEmpty()
-	@ApiProperty()
+	@ApiProperty({
+		required: false,
+	})
+  @IsOptional()
 	id: number;
 
 	@ApiProperty({

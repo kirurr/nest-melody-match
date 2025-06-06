@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { Prisma, User, UserData } from '@prisma/client';
+import { Prisma, User, UserContact, UserData } from '@prisma/client';
 import {
   CreateUserContacts,
   CreateUserPreferences,
   FindNearestUsers,
   UpdateUserContact,
+  UpdateUserContacts,
   UpdateUserData,
   UpdateUserPreferences,
 } from './user.types';
@@ -277,7 +278,8 @@ export class UserRepository {
       data.map((contact) =>
         this.db.userContact.create({
           data: {
-            ...contact,
+						name: contact.name,
+						value: contact.value,
             userData: {
               connect: {
                 userId,
@@ -288,6 +290,14 @@ export class UserRepository {
       ),
     );
   }
+	
+	async deleteUserContact(id: number): Promise<void> {
+		await this.db.userContact.delete({
+			where: {
+				id,
+			},
+		});
+	}
 
   async updateUserContact(data: UpdateUserContact): Promise<void> {
     await this.db.userContact.update({
